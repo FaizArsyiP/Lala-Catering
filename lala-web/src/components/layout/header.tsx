@@ -38,20 +38,20 @@ export const Header = () => {
 
     return (
         <header className="w-full
-                        xs:min-h-[80px] tablet:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] xl:min-h-[160px] desk:min-h-[180px]
+                        xs:hidden tablet:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] xl:min-h-[160px] desk:min-h-[180px]
                         flex items-center justify-center">
             
             {/* CONTENTS CONTAINER */}
             <div className="w-full
                             xs:px-[15px] tablet:px-[20px] md:px-[25px] lg:px-[28px] xl:px-[29px] desk:px-[30px]
                             xs:py-[5px] tablet:py-[7px] md:py-[8px] lg:py-[9px] xl:py-[9px] desk:py-[10px]
-                            xs:min-h-[50px] tablet:min-h-[60px] md:min-h-[70px] lg:min-h-[80px] xl:min-h-[90px] desk:min-h-[100px]
+                            xs:min-h-[40px] tablet:min-h-[50px] md:min-h-[60px] lg:min-h-[70px] xl:min-h-[80px] desk:min-h-[90px]
                             flex items-center justify-between
                             bg-white rounded-full">
 
                 {/* LEFT SIDE */}
-                <div className="xs:w-[180px] tablet:w-[200px] md:w-[220px] lg:w-[250px] xl:w-[280px] desk:w-[300px]
-                               h-full flex items-center xs:gap-4 tablet:gap-5 md:gap-6 lg:gap-7 xl:gap-8 desk:gap-9">
+                <div className="w-[300px]
+                               h-full flex items-center justify-between">
                     {/* LOGO */}
                     <div className="relative 
                                    xs:w-[40px] xs:h-[40px]
@@ -71,7 +71,7 @@ export const Header = () => {
                     </div>
                     
                     {/* NAVIGATION */}
-                    <nav className="flex items-center xs:gap-2 tablet:gap-3 md:gap-4 lg:gap-5 xl:gap-6 desk:gap-6">
+                    <nav className="xs:hidden tablet:w-[110px] sm:w-[130px] md:w-[150px] desk:w-[170px] flex items-center justify-between">
                         {navItems.map((item) => (
                             <Link
                                 key={item.href}
@@ -92,31 +92,37 @@ export const Header = () => {
                 <div className="xs:w-[140px] tablet:w-[160px] md:w-[180px] lg:w-[200px] xl:w-[230px] desk:w-[250px]
                                h-full flex items-center justify-end xs:gap-2 tablet:gap-3 md:gap-3 lg:gap-4 xl:gap-4 desk:gap-4">
                     {/* CUSTOMER SUPPORT */}
-                    <Link 
-                        href="/support" 
-                        className="xs:text-[10px] tablet:text-[11px] md:text-xs lg:text-sm xl:text-sm desk:text-base
-                                  font-medium text-gray-500 hover:text-gray-600 transition-colors whitespace-nowrap
-                                  xs:hidden md:block"
-                    >
-                        Support
-                    </Link>
+                    <div className="relative 
+                                    xs:w-[20px] xs:h-[20px]
+                                    tablet:w-[22px] tablet:h-[22px]
+                                    md:w-[24px] md:h-[24px]
+                                    lg:w-[26px] lg:h-[26px]
+                                    xl:w-[28px] xl:h-[28px]
+                                    desk:w-[30px] desk:h-[30px]">
+                        <Image
+                            src="/assets/header/customersupport.svg"
+                            alt="Customer Support Icon"
+                            fill
+                            className="object-contain cursor-pointer"
+                        />
+                    </div>
                     
                     {/* SIGN IN/OUT BUTTON */}
                     {isLoggedIn ? (
                         <button
                             onClick={handleLogout}
                             className="xs:px-3 xs:py-1.5 tablet:px-4 tablet:py-1.5 md:px-5 md:py-2 lg:px-5 lg:py-2 xl:px-6 xl:py-2 desk:px-6 desk:py-2
-                                      bg-black text-white rounded-full 
+                                     text-white rounded-full 
                                       xs:text-xs tablet:text-base md:text-md lg:text-lg xl:text-xl
                                       font-medium hover:bg-gray-800 transition-colors whitespace-nowrap"
                         >
-                            Sign Out
+                            Profile
                         </button>
                     ) : (
                         <Link
                             href="/signin"
                             className="xs:px-3 xs:py-1.5 tablet:px-4 tablet:py-1.5 md:px-5 md:py-2 lg:px-5 lg:py-2 xl:px-6 xl:py-2 desk:px-6 desk:py-2
-                                      bg-[#E5713A] text-white rounded-full 
+                                     text-white rounded-full 
                                       xs:text-xs tablet:text-base md:text-md lg:text-lg xl:text-xl
                                       font-medium hover:bg-gray-800 transition-colors whitespace-nowrap"
                         >
