@@ -80,7 +80,7 @@ const KonfirmasiPesananPage = () => {
             const orderResponse = await api.post("/orders/multi-day", {
                 deliveries,
                 lokasiPengiriman: userData.address,
-                metodePengambilan: userData.deliveryMethod || "diantar",
+                metodePengambilan: userData.deliveryMethod || "Kirim ke Lokasi",
             }, {
                 headers: { "x-auth-token": token },
             });
