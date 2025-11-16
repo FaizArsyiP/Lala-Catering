@@ -123,7 +123,7 @@ const Page = () => {
             <Header />
 
             <div className="max-w-[1140px] mx-auto">
-                <div className="sticky top-0 z-10 py-2 -mt-1 mb-5 bg-white ease-in-out w-full">
+                <div className="sticky top-0 z-10 py-2  mb-5 bg-white ease-in-out w-full ">
                     <div className="w-fit flex items-start gap-[10px]">
                         <div className="flex-1">
                             <Search

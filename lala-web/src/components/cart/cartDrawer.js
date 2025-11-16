@@ -363,7 +363,7 @@ const CartDrawer = () => {
                         <span>Total</span>
                         <span>{formatPrice(totalAmount)}</span>
                     </div>
-                    <Link href="/konfirmasi-pesanan">
+                    <Link href="/order">
                         <button
                             onClick={() => setIsOpen(false)}
                             disabled={cart.length === 0}

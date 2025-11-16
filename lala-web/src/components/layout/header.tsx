@@ -44,7 +44,7 @@ export const Header = () => {
     return (
         <header className="w-full
                         xs:min-h-[80px] tablet:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] xl:min-h-[160px] desk:min-h-[180px]
-                        flex items-center justify-center">
+                        flex items-center justify-center bg-[#002683]">
             
             {/* CONTENTS CONTAINER */}
             <div className="w-full
