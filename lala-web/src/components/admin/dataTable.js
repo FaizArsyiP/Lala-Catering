@@ -1,36 +1,11 @@
 import React from 'react';
 import Image from 'next/image';
 
-/**
- * Komponen Tabel Universal yang bisa digunakan untuk berbagai keperluan
- * 
- * @param {Array} columns - Konfigurasi kolom yang akan ditampilkan
- * @param {Array} data - Data yang akan ditampilkan di tabel
- * @param {String} theme - Tema warna: "blue" atau "dark"
- */
 const DataTable = ({ 
     columns = [], 
     data = [], 
-    theme = "blue" 
 }) => {
     
-    // Tentukan warna berdasarkan theme
-    const themeColors = {
-        blue: {
-            header: "bg-[#002683]",
-            headerText: "text-white",
-            rowHover: "hover:bg-[#F0F5FF]"
-        },
-        dark: {
-            header: "bg-[#1E293B]",
-            headerText: "text-white",
-            rowHover: "hover:bg-[#F7F7F7]"
-        }
-    };
-    
-    const colors = themeColors[theme] || themeColors.blue;
-
-    // Format harga ke Rupiah
     const formatPrice = (value) => {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
@@ -39,26 +14,23 @@ const DataTable = ({
         }).format(value);
     };
 
-    // Render cell berdasarkan tipe kolom
     const renderCell = (column, rowData) => {
         const value = rowData[column.key];
 
-        // Custom render jika ada
         if (column.render) {
             return column.render(value, rowData);
         }
 
-        // Render default berdasarkan tipe
         switch (column.type) {
             case 'image':
                 return (
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#F7F7F7] rounded-lg overflow-hidden flex-shrink-0">
+                        <div className="w-[35px] h-[35px] bg-[#F7F7F7] rounded-md overflow-hidden flex-shrink-0">
                             <Image
                                 src={value || '/placeholder-food.jpg'}
                                 alt={rowData.name || 'Product'}
-                                width={40}
-                                height={40}
+                                width={35}
+                                height={35}
                                 className="object-cover"
                                 onError={(e) => {
                                     e.target.src = '/placeholder-food.jpg';
@@ -66,7 +38,7 @@ const DataTable = ({
                             />
                         </div>
                         {column.showName && (
-                            <span className="text-[#002683] font-medium">
+                            <span className="text-[#002683] text-[16px]">
                                 {rowData[column.nameKey || 'name']}
                             </span>
                         )}
@@ -75,14 +47,14 @@ const DataTable = ({
 
             case 'currency':
                 return (
-                    <span className="text-[#E5713A] font-bold">
+                    <span className="text-[#002683] text-[16px]">
                         {formatPrice(value)}
                     </span>
                 );
 
             case 'quantity':
                 return (
-                    <span className="inline-block px-3 py-1 bg-[#E5713A] text-white font-bold rounded-full text-sm">
+                    <span className="text-[#002683] text-[16px]">
                         x{value}
                     </span>
                 );
@@ -99,7 +71,7 @@ const DataTable = ({
             case 'text':
             default:
                 return (
-                    <span className="text-[#002683] font-medium">
+                    <span className="text-[#002683] text-[16px]">
                         {value}
                     </span>
                 );
@@ -112,12 +84,12 @@ const DataTable = ({
                 <table className="w-full">
                     
                     {/* HEADER */}
-                    <thead className={colors.header}>
+                    <thead className="bg-[#002683]">
                         <tr>
                             {columns.map((column, index) => (
                                 <th
                                     key={index}
-                                    className={`px-6 py-4 font-semibold ${colors.headerText}
+                                    className={`px-6 py-4 font-semibold text-white
                                         ${column.align === 'center' ? 'text-center' : ''}
                                         ${column.align === 'right' ? 'text-right' : 'text-left'}`}
                                 >
@@ -134,7 +106,7 @@ const DataTable = ({
                             <tr>
                                 <td 
                                     colSpan={columns.length}
-                                    className="px-6 py-12 text-center text-[#9D9D9D]"
+                                    className="px-6 py-5 text-center text-[#5B5B5B]"
                                 >
                                     <p className="text-lg">Tidak ada data</p>
                                 </td>
@@ -144,7 +116,7 @@ const DataTable = ({
                             data.map((row, rowIndex) => (
                                 <tr
                                     key={rowIndex}
-                                    className={`border-b border-[#E5E5E5] transition-colors ${colors.rowHover}`}
+                                    className={`border-b border-[#D9D9D9] hover:bg-[#F7F7F7] transition-colors`}
                                 >
                                     {columns.map((column, colIndex) => (
                                         <td

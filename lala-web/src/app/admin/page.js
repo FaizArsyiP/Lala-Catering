@@ -1,9 +1,12 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import DataTable from '@/components/admin/dataTable';
+import DropdownFilter from '@/components/dropdownFilter';
+import StatCard from '@/components/admin/statCard';
+import { HiOutlineShoppingCart, HiOutlineBanknotes } from "react-icons/hi2";
 
-const DashboardRingkasanPesanan = () => {
+const DashboardAdmin = () => {
     
     // KONFIGURASI KOLOM untuk tabel dashboard
     const columns = [
@@ -17,8 +20,8 @@ const DashboardRingkasanPesanan = () => {
             key: 'image',
             label: 'Produk',
             type: 'image',
-            showName: true,  // Tampilkan nama produk di samping gambar
-            nameKey: 'name', // Key untuk nama produk
+            showName: true,  
+            nameKey: 'name', 
             align: 'left'
         },
         {
@@ -35,42 +38,75 @@ const DashboardRingkasanPesanan = () => {
         }
     ];
 
-    // DATA untuk tabel
+    // DATA DUMMY untuk tabel
     const data = [
         {
             day: 'Senin',
-            image: '/images/nasi-goreng.jpg',
+            image: '/assets/dummy/pic1.jpg',
             name: 'Senin - Nasi Goreng Seafood',
             quantity: 20,
             revenue: 400000
         },
         {
             day: 'Rabu',
-            image: '/images/soto-ayam.jpg',
+            image: '/assets/dummy/pic2.jpg',
             name: 'Rabu - Soto Ayam',
             quantity: 100,
             revenue: 1000000
         }
     ];
 
+    const [selectedDay, setSelectedDay] = React.useState(null);
+    const filteredData = selectedDay ? data.filter(item => item.day === selectedDay) : data;
+    const dayOptions = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
     return (
         <div>
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-[#002683] mb-2">
-                    Ringkasan Pesanan
-                </h2>
-                <p className="text-[#5B5B5B]">
-                    Minggu Ini
-                </p>
+            <h2 className="text-[36px] font-semibold text-[#E5713A] mb-4">
+                Dashboard
+            </h2>
+
+            <div className="grid grid-cols-2 gap-6 mb-8">
+                <StatCard
+                    title="Jumlah Pesanan"
+                    value={data.reduce((sum, item) => sum + item.quantity, 0)}
+                    changePercentage={12.5}
+                    icon={HiOutlineShoppingCart}
+                />
+                <StatCard
+                    title="Pendapatan"
+                    value={data.reduce((sum, item) => sum + item.revenue, 0)}
+                    changePercentage={-8.3}
+                    isCurrency={true}
+                    icon={HiOutlineBanknotes}
+                />
+            </div>
+
+            <div className="flex justify-between items-center mb-6">
+                <div className='text-[#E5713A]'>
+                    <h2 className="text-[36px] font-semibold">
+                        Ringkasan Pesanan
+                    </h2>
+                    <p className="text-[24px]">Minggu Ini</p>
+                </div>
+
+                <div>
+                    <DropdownFilter
+                        name="Pilih Hari"
+                        options={dayOptions}
+                        value={selectedDay}
+                        onSelect={setSelectedDay}
+                    />
+                </div>
             </div>
 
             <DataTable 
                 columns={columns}
-                data={data}
+                data={filteredData}
                 theme="blue"
             />
         </div>
     );
 };
 
-export default DashboardRingkasanPesanan;
+export default DashboardAdmin;
