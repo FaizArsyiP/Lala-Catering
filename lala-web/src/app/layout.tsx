@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 import Providers from "./provider";
 import CartDrawer from "@/components/cart/cartDrawer";
 
@@ -24,26 +25,19 @@ export default function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const midtransClientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY;
-
     return (
         <html lang="en">
-            <head>
-                <script
-                    type="text/javascript"
-                    src="https://app.sandbox.midtrans.com/snap/snap.js"
-                    data-client-key={midtransClientKey}
-                ></script>
-            </head>
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-                    <Providers>
-
-                        <div className="container-mx-auto">{children}</div>
-
-                        <CartDrawer />
-
-                    </Providers>
+                <Script
+                    src="https://app.sandbox.midtrans.com/snap/snap.js"
+                    data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+                    strategy="beforeInteractive"
+                />
+                <Providers>
+                    <div className="container-mx-auto">{children}</div>
+                    <CartDrawer />
+                </Providers>
             </body>
         </html>
     );
