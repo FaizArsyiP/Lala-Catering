@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IoCart, IoClose } from "react-icons/io5";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
@@ -25,12 +25,51 @@ const groupItemsByDay = (items) => {
 };
 
 const CartDrawer = () => {
+    const [token, setToken] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const { cart, getTotal, totalItems, updateQuantity } = useCart();
 
     const totalAmount = getTotal();
     const groupedCart = groupItemsByDay(cart);
     const daysInCart = Object.keys(groupedCart);
+
+    useEffect(() => {
+        // Function untuk check token
+        const checkToken = () => {
+            const storedToken = localStorage.getItem("token");
+            setToken(storedToken);
+        };
+
+        // Check token pertama kali
+        checkToken();
+
+        // Listen untuk perubahan localStorage (untuk multi-tab)
+        const handleStorageChange = (e) => {
+            if (e.key === "token") {
+                checkToken();
+                // Tutup drawer jika logout
+                if (!e.newValue) {
+                    setIsOpen(false);
+                }
+            }
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+
+        // Custom event listener untuk single tab (sama tab)
+        const handleAuthChange = () => {
+            checkToken();
+            setIsOpen(false);
+        };
+
+        window.addEventListener("authStateChanged", handleAuthChange);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener("storage", handleStorageChange);
+            window.removeEventListener("authStateChanged", handleAuthChange);
+        };
+    }, []);
 
     const handleIncrement = (e, id, day) => {
         e.preventDefault();
@@ -45,6 +84,10 @@ const CartDrawer = () => {
         console.log("DECREMENT clicked for:", id, day);
         updateQuantity(id, day, -1);
     };
+
+    if (!token) {
+        return null; // or you can return a message or redirect to signin
+    }
 
     return (
         <>
@@ -242,7 +285,7 @@ const CartDrawer = () => {
                                                         height: "32px",
                                                         border: "none",
                                                         backgroundColor:
-                                                            "7F7F7F",
+                                                            "#F7F7F7",
                                                         color: "#002683",
                                                         fontSize: "18px",
                                                         fontWeight: "bold",
@@ -264,7 +307,7 @@ const CartDrawer = () => {
                                                             "1px solid #002683",
                                                         fontSize: "14px",
                                                         backgroundColor:
-                                                            "7F7F7F",
+                                                            "#F7F7F7",
                                                         color: "#002683",
                                                     }}>
                                                     {item.quantity}
@@ -282,7 +325,7 @@ const CartDrawer = () => {
                                                         height: "32px",
                                                         border: "none",
                                                         backgroundColor:
-                                                            "7F7F7F",
+                                                            "#F7F7F7",
                                                         color: "#002683",
                                                         fontSize: "18px",
                                                         fontWeight: "bold",

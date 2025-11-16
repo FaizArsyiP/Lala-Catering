@@ -35,6 +35,7 @@ export const Header = () => {
 
     const handleLogout = () => {
         localStorage.removeItem("token");
+        window.dispatchEvent(new Event("authStateChanged"));
         setIsLoggedIn(false);
         router.push("/");
         router.refresh();

@@ -25,6 +25,7 @@ export default function LoginPage() {
             );
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("userId", JSON.stringify(res.data.user.id));
+            window.dispatchEvent(new Event("authStateChanged"));
             router.push("/");
         } catch (error) {
             console.error("Google login error:", error);
