@@ -4,7 +4,7 @@ import FormInput from '@/components/formInput';
 
 // Daftar Pilihan untuk Dropdown
 const deliveryOptions = ["Kirim ke Lokasi", "Ambil Sendiri"];
-const paymentOptions = ["QRIS", "Transfer Bank BCA"];
+const paymentOptions = ["QRIS", "Virtual Account"];
 
 const UserDetailsForm = ({ 
     userData, 

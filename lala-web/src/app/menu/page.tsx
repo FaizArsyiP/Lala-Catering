@@ -57,63 +57,67 @@ const Page = () => {
         <div className="min-h-screen">
             <Header />
 
-            <div className="sticky top-0 z-10 px-20 py-5 my-5 bg-white ease-in-out w-full">
-                <div className="w-fit flex items-start gap-[10px]">
-                    {/* Search Bar */}
-                    <div className="flex-1">
-                        <Search
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Cari menu hari ini..."
-                        />
-                    </div>
+            <div className="max-w-[1140px] mx-auto">
+                <div className="sticky top-0 z-10 py-2 -mt-1 mb-5 bg-white ease-in-out w-full">
+                    <div className="w-fit flex items-start gap-[10px]">
+                        {/* Search Bar */}
+                        <div className="flex-1">
+                            <Search
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Cari menu hari ini..."
+                            />
+                        </div>
 
-                    {/* Filter Dropdown Hari */}
-                    <div className="flex-shrink-0 w-fit">
-                        <DropdownFilter
-                            name="Pilih Hari"
-                            options={hariList}
-                            value={selectedHari}
-                            onSelect={setSelectedHari}
-                        />
+                        {/* Filter Dropdown Hari */}
+                        <div className="flex-shrink-0 w-fit">
+                            <DropdownFilter
+                                name="Pilih Hari"
+                                options={hariList}
+                                value={selectedHari}
+                                onSelect={setSelectedHari}
+                            />
+                        </div>
                     </div>
+                </div>
+
+                <div className="w-full flex flex-col gap-[30px]">
+                    {menuByDay.map((group) => (
+                        <div key={group.day} className="mb-6">
+                            <div className="flex items-center mb-6">
+                                <h2 className="text-[40px] font-semibold text-[#002683] flex-shrink-0 w-[150px]">
+                                    {group.day}
+                                </h2>
+                                <hr className="border-dashed border-t-2 border-[#E5713A] w-full ml-4" />
+                            </div>
+
+                            {/* Grid Card Menu */}
+                            <div className="grid grid-cols-4 gap-[33.3px]">
+                                {group.menus.map((menu: MenuItem) => (
+                                    <CardMenu
+                                        key={menu._id + group}
+                                        id={menu._id}
+                                        imageSrc={menu.imageSrc}
+                                        name={menu.name}
+                                        description={menu.description}
+                                        price={menu.price}
+                                        day={group.day}
+                                    />
+                                ))}
+                            </div>
+
+                            {group.menus.length === 0 && (
+                                <p className="text-gray-500 italic mt-4">
+                                    Tidak ada menu yang ditemukan untuk hari{" "}
+                                    {group.day}.
+                                </p>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </div>
 
-            <div className="px-20 flex flex-col gap-10">
-                {menuByDay.map((group) => (
-                    <div key={group.day} className="mb-6">
-                        <div className="flex items-center mb-6">
-                            <h2 className="text-[40px] font-semibold text-[#002683] flex-shrink-0 w-[150px]">
-                                {group.day}
-                            </h2>
-                            <hr className="border-dashed border-t-2 border-[#E5713A] w-full ml-4" />
-                        </div>
-
-                        {/* Grid Card Menu */}
-                        <div className="grid grid-cols-4 gap-[30px]">
-                            {group.menus.map((menu: MenuItem) => (
-                                <CardMenu
-                                    key={menu._id + group}
-                                    id={menu._id}
-                                    imageSrc={menu.imageSrc}
-                                    name={menu.name}
-                                    description={menu.description}
-                                    price={menu.price}
-                                    day={group.day}
-                                />
-                            ))}
-                        </div>
-
-                        {group.menus.length === 0 && (
-                            <p className="text-gray-500 italic mt-4">
-                                Tidak ada menu yang ditemukan untuk hari{" "}
-                                {group.day}.
-                            </p>
-                        )}
-                    </div>
-                ))}
-            </div>
+            
         </div>
     );
 };

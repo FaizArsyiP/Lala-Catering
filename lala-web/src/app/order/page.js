@@ -42,33 +42,32 @@ const KonfirmasiPesananPage = () => {
         <div className="min-h-screen bg-white">
             <Header />
             
-            <div className="max-w-7xl mx-auto px-8 py-12">
+            <div className="max-w-[1140px] mx-auto px-8 py-12">
                 <Link href="/menu" className="inline-flex items-center text-[#E5713A] hover:text-[#D46029] font-semibold transition-colors mb-8">
                     <IoArrowBackOutline size={24} className="mr-2" />
                     Kembali ke Menu
                 </Link>
 
-                <h1 className="text-4xl font-bold text-[#002683] mb-8">
-                    Konfirmasi Pesanan
-                </h1>
-
-                <div className="bg-gradient-to-br from-[#FFF5F0] to-[#FFE8DC] 
-                              rounded-[30px] p-8 shadow-lg border-2 border-[#E5713A]">
+                <div className="bg-[#F7F7F7] rounded-[30px] p-8 shadow-lg border-2 border-[#002683]">
+                    
+                    <h1 className="text-[40px] font-bold text-[#002683] mb-8">
+                        Konfirmasi Pesanan
+                    </h1>
                     
                     <div className="flex gap-8">
                         {/* KIRI - Form Data Diri (60%) */}
                         <div className="w-[60%]">
-                            <div className="bg-white rounded-[20px] p-6 shadow-sm">
-                                <h2 className="text-2xl font-bold text-[#002683] mb-6">
-                                    Data Pemesan
-                                </h2>
+                            
+                            <h2 className="text-[30px] font-bold text-[#E5713A] mb-6">
+                                Data Pemesan
+                            </h2>
                                 
-                                <UserDetailsForm
-                                    userData={userData}
-                                    setUserData={setUserData}
-                                    editable={true}
-                                />
-                            </div>
+                            <UserDetailsForm
+                                userData={userData}
+                                setUserData={setUserData}
+                                editable={true}
+                            />
+                            
                             
                             {/* Tombol Pesan */}
                             <button
@@ -95,8 +94,8 @@ const KonfirmasiPesananPage = () => {
                             />
                         </div>
                     </div>
+                </div>
             </div>
-        </div>
         </div>
     );
 };
