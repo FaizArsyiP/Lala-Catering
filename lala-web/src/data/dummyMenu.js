@@ -27,7 +27,7 @@ const DummyMenu = [
         price: 8000,
         category: "Minuman",
         available: true,
-        day: "Rabu",
+        day: "Senin",
       },
       {
         _id: "665f8d02e8b1c43d8b5a0004",
@@ -37,7 +37,7 @@ const DummyMenu = [
         price: 15000,
         category: "Snack & Appetizer",
         available: true,
-        day: "Rabu",
+        day: "Senin",
       },
 ];
 

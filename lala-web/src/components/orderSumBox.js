@@ -31,14 +31,14 @@ const OrderSumBox = ({
     const daysInCart = Object.keys(groupedCart);
 
     return (
-        <div className="w-full rounded-[20px] bg-[#F7F7F7] shadow-xl overflow-hidden flex flex-col">
+        <div className="w-full overflow-hidden flex flex-col">
             
             {/* HEADER */}
-            <div className='mx-6 pt-6 pb-6 border-b-2 border-dashed border-[#E5713A]'>
-                <h1 className="text-[30px] font-bold text-[#002683] mb-1">
+            <div className='mx-6 pb-6 border-b-2 border-dashed border-[#E5713A]'>
+                <h1 className="text-[30px] font-bold text-[#E5713A] mb-1">
                      Ringkasan Pesanan
                 </h1>
-                <p className="text-[16px] font-medium text-[#002683]">
+                <p className="text-[16px] font-medium text-[#5B5B5B]">
                     {totalItems} Item
                 </p>
             </div>
@@ -105,21 +105,6 @@ const OrderSumBox = ({
                         {formatPrice(totalAmount)}
                     </span>
                 </div>
-                
-                {/* Tombol Checkout (Optional) */}
-                {showCheckoutButton && (
-                    <button
-                        onClick={checkoutAction}
-                        disabled={cart.length === 0}
-                        className={`w-full py-3.5 rounded-[20px] font-medium text-xl transition-all
-                            ${cart.length > 0 
-                                ? 'bg-[#E5713A] text-white hover:bg-[#D46029] cursor-pointer' 
-                                : 'bg-[#9D9D9D] text-[#5B5B5B] cursor-not-allowed'
-                            }`}
-                    >
-                        Pesan Sekarang
-                    </button>
-                )}
             </div>
         </div>
     );
