@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 // Kita ambil tipe data dari hooks yang lu kasih
-import { type Order, type OrderItem } from "@/hooks/useOrders";
+import { type Order, type OrderItem, type Delivery } from "@/hooks/useOrders";
 import { IconUser, IconSearch, IconDish } from "@/components/icons";
 
 interface PesananListProps {
@@ -28,14 +28,26 @@ export default function PesananList({ orders, loading }: PesananListProps) {
         if (!normalizedQuery) return true;
         const q = normalizedQuery;
 
-        return (
+        // Search in order basic info
+        const matchesBasicInfo =
             o._id.toLowerCase().includes(q) ||
             o.userInfo.nama.toLowerCase().includes(q) ||
-            o.status.toLowerCase().includes(q) ||
-            o.items.some((it: OrderItem) =>
+            o.status.toLowerCase().includes(q);
+
+        // Search in items (single-day orders)
+        const matchesItems = o.items && o.items.some((it: OrderItem) =>
+            it.namaItem.toLowerCase().includes(q)
+        );
+
+        // Search in deliveries (multi-day orders)
+        const matchesDeliveries = o.deliveries && o.deliveries.some((delivery: Delivery) =>
+            delivery.hari.toLowerCase().includes(q) ||
+            delivery.items.some((it: OrderItem) =>
                 it.namaItem.toLowerCase().includes(q)
             )
         );
+
+        return matchesBasicInfo || matchesItems || matchesDeliveries;
     });
 
     // pagination
@@ -175,41 +187,84 @@ export default function PesananList({ orders, loading }: PesananListProps) {
 
                             <div className="p-6">
                                 <div className="grid grid-cols-1 gap-4">
-                                    {o.items.map((it: OrderItem, idx: number) => (
-                                        <div
-                                            key={idx}
-                                            className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 py-3 border-b border-slate-100 text-[#0E3B7A]">
-                                            <div className="col-span-1 flex items-center justify-start">
-                                                <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center">
-                                                    <IconDish />
+                                    {/* Check if multi-day order */}
+                                    {o.deliveries && o.deliveries.length > 0 ? (
+                                        // Multi-day order: flatten all items with day prefix
+                                        <>
+                                            {o.deliveries.map((delivery: Delivery, deliveryIdx: number) =>
+                                                delivery.items.map((it: OrderItem, itemIdx: number) => (
+                                                    <div
+                                                        key={`${deliveryIdx}-${itemIdx}`}
+                                                        className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 py-3 border-b border-slate-100 text-[#0E3B7A]">
+                                                        <div className="col-span-1 flex items-center justify-start">
+                                                            <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center">
+                                                                <IconDish />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-span-1 sm:col-span-6">
+                                                            <div className="text-sm font-medium">
+                                                                {delivery.hari} - {it.namaItem}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-span-1 sm:col-span-1 text-center text-sm">
+                                                            x{it.jumlah}
+                                                        </div>
+
+                                                        <div className="col-span-1 sm:col-span-2 text-right text-sm">
+                                                            Rp {it.harga.toLocaleString()}
+                                                        </div>
+
+                                                        <div className="col-span-1 sm:col-span-1 text-center text-sm hidden sm:block">
+                                                            {delivery.statusDelivery}
+                                                        </div>
+
+                                                        <div className="col-span-1 sm:col-span-1 text-right text-sm">
+                                                            {o.metodePengambilan}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </>
+                                    ) : (
+                                        // Single-day order: show items directly
+                                        o.items.map((it: OrderItem, idx: number) => (
+                                            <div
+                                                key={idx}
+                                                className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 py-3 border-b border-slate-100 text-[#0E3B7A]">
+                                                <div className="col-span-1 flex items-center justify-start">
+                                                    <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center">
+                                                        <IconDish />
+                                                    </div>
+                                                </div>
+
+                                                <div className="col-span-1 sm:col-span-6">
+                                                    <div className="text-sm font-medium">
+                                                        {it.namaItem}
+                                                    </div>
+                                                </div>
+
+                                                <div className="col-span-1 sm:col-span-1 text-center text-sm">
+                                                    x{it.jumlah}
+                                                </div>
+
+                                                <div className="col-span-1 sm:col-span-2 text-right text-sm">
+                                                    Rp {it.harga.toLocaleString()}
+                                                </div>
+
+                                                <div className="col-span-1 sm:col-span-1 text-center text-sm hidden sm:block">
+                                                    {o.status}
+                                                </div>
+
+                                                <div className="col-span-1 sm:col-span-1 text-right text-sm">
+                                                    {o.metodePengambilan}
                                                 </div>
                                             </div>
+                                        ))
+                                    )}
 
-                                            <div className="col-span-1 sm:col-span-6">
-                                                <div className="text-sm font-medium">
-                                                    {it.namaItem}
-                                                </div>
-                                            </div>
-
-                                            <div className="col-span-1 sm:col-span-1 text-center text-sm">
-                                                x{it.jumlah}
-                                            </div>
-
-                                            <div className="col-span-1 sm:col-span-2 text-right text-sm">
-                                                Rp {it.harga.toLocaleString()}
-                                            </div>
-
-                                            <div className="col-span-1 sm:col-span-1 text-center text-sm hidden sm:block">
-                                                {o.status}
-                                            </div>
-
-                                            <div className="col-span-1 sm:col-span-1 text-right text-sm">
-                                                {o.metodePengambilan}
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    <div className="flex items-center justify-end gap-3">
+                                    <div className="flex items-center justify-end gap-3 mt-2">
                                         <button className="px-3 py-1 border rounded text-sm cursor-pointer">
                                             Lihat detail
                                         </button>

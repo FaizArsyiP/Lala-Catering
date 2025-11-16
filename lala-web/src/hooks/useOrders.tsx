@@ -15,6 +15,15 @@ export type OrderItem = {
     _id: string;
 };
 
+export type Delivery = {
+    _id: string;
+    hari: string;
+    tanggalPengiriman: string;
+    items: OrderItem[];
+    subtotal: number;
+    statusDelivery: string;
+};
+
 export type Order = {
     _id: string;
     status: string;
@@ -23,7 +32,10 @@ export type Order = {
         nama: string;
         nomorTelepon: string;
     };
-    items: OrderItem[];
+    totalHarga: number;
+    items: OrderItem[];        // Untuk single-day orders
+    deliveries?: Delivery[];   // Untuk multi-day orders
+    isMultiDay?: boolean;
 };
 
 export function useOrders(endpoint: string) {

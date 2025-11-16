@@ -101,11 +101,11 @@ const KonfirmasiPesananPage = () => {
                 onSuccess: function (result) {
                     alert("Pembayaran berhasil!");
                     clearCart();
-                    router.push("/myorders");
+                    router.push("/profile");
                 },
                 onPending: function (result) {
                     alert("Menunggu pembayaran...");
-                    router.push("/myorders");
+                    router.push("/profile");
                 },
                 onError: function (result) {
                     alert("Pembayaran gagal! Silakan coba lagi.");
