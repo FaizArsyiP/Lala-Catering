@@ -177,42 +177,22 @@ const setWeeklySchedule = async (req, res) => {
  */
 const getWeeklySchedule = async (req, res) => {
     try {
-        const { weekNumber, year } = getCurrentWeek();
-
-        const menus = await MenuItem.find({
-            'currentWeekSchedule.weekNumber': weekNumber,
-            'currentWeekSchedule.year': year
-        });
-
-        if (menus.length === 0) {
-            return res.status(404).json({
-                message: `Jadwal mingguan untuk minggu ${weekNumber}/${year} belum diset.`
-            });
-        }
-
-        const { weekStart, weekEnd } = getWeekDateRange(weekNumber, year);
-
-        // Format response: group by hari
+        const menus = await MenuItem.find(); 
+        // kalau kamu mau filter pakai currentWeekSchedule, tambahkan kembali filternya
+        
         const hariList = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
-        const schedule = hariList.map(hari => {
-            const menuTersedia = [];
 
-            menus.forEach(menu => {
-                const quota = menu.getQuotaForDay(hari);
-                if (quota) {
-                    menuTersedia.push({
-                        menuId: menu._id,
-                        nama: menu.nama,
-                        deskripsi: menu.deskripsi,
-                        harga: menu.harga,
-                        imageUrl: menu.imageUrl,
-                        quotaHarian: quota.quotaHarian,
-                        terjual: quota.terjual,
-                        available: quota.quotaHarian - quota.terjual,
-                        tanggal: quota.tanggal
-                    });
-                }
-            });
+        const schedule = hariList.map(hari => {
+            const menuTersedia = menus
+                .filter(menu => Array.isArray(menu.jadwal) && menu.jadwal.includes(hari))
+                .map(menu => ({
+                    menuId: menu._id,
+                    nama: menu.nama,
+                    deskripsi: menu.deskripsi,
+                    harga: menu.harga,
+                    imageUrl: menu.imageUrl,
+                    stok: menu.stok ?? null,
+                }));
 
             return {
                 hari,
@@ -221,9 +201,6 @@ const getWeeklySchedule = async (req, res) => {
         });
 
         res.status(200).json({
-            weekNumber,
-            year,
-            weekRange: formatDateRange(weekStart, weekEnd),
             schedule
         });
 
@@ -231,6 +208,7 @@ const getWeeklySchedule = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 /**
  * DELETE /api/jadwal/mingguan

@@ -59,7 +59,7 @@ const menuItemSchema = new mongoose.Schema({
     },
     jadwal: {
         type: [String],
-        enum: ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'],
+        enum: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
         default: []
     },
     // Current week schedule only
