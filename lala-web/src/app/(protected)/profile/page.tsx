@@ -6,14 +6,16 @@ import { useState, useEffect } from "react";
 import Header from "@/components/layout/header";
 import { useProfile } from "@/hooks/useProfile";
 import axios from "axios";
+import { useOrders, Order, OrderItem } from "@/hooks/useOrders";
 
 export default function DashboardProfilePage() {
     const router = useRouter();
     const [query, setQuery] = useState("");
-    const [activeFilter, setActiveFilter] = useState("Semua");
+    const [activeFilter, setActiveFilter] = useState("All");
     const [itemsPerPage, setItemsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
     const [activeTab, setActiveTab] = useState<"pesanan" | "akun">("pesanan");
+
     const days = [
         "Senin",
         "Selasa",
@@ -73,26 +75,7 @@ export default function DashboardProfilePage() {
     };
 
     // sample data pesanan
-    const sampleOrders = new Array(23).fill(0).map((_, i) => ({
-        id: `0000000${i + 1}`,
-        name: "Yosa",
-        items: [
-            {
-                day: days[i % days.length],
-                title: "Nasi Goreng Seafood",
-                qty: 1,
-                price: "Rp20.000",
-            },
-            {
-                day: days[i % days.length],
-                title: "Soto Ayam",
-                qty: 1,
-                price: "Rp20.000",
-            },
-        ],
-        status: ["Paid", "Confirmed", "Ready", "Complete", "Cancelled"][i % 5],
-        email: "ysoaBjirLMAO@gmail.com",
-    }));
+    const { orders, loadingOrders } = useOrders();
 
     // simple inline SVG yang gw comot daei w3.org
     const IconUser = ({
@@ -156,33 +139,24 @@ export default function DashboardProfilePage() {
 
     // filterr
     const normalizedQuery = query.trim().toLowerCase();
-    const filteredByStatus = sampleOrders.filter((o) => {
-        if (
-            !activeFilter ||
-            activeFilter === "Semua" ||
-            activeFilter === "Tanggal"
-        )
-            return true;
-        return (o.status || "").toLowerCase() === activeFilter.toLowerCase();
+    const filteredByStatus = orders.filter((o: Order) => {
+        if (activeFilter === "All" || activeFilter === "Tanggal") return true;
+        return o.status.toLowerCase() === activeFilter.toLowerCase();
     });
 
-    const filteredOrders = filteredByStatus.filter((o) => {
+    const filteredOrders = filteredByStatus.filter((o: Order) => {
         if (!normalizedQuery) return true;
-        if ((o.id || "").toLowerCase().includes(normalizedQuery)) return true;
-        if ((o.name || "").toLowerCase().includes(normalizedQuery)) return true;
-        if ((o.status || "").toLowerCase().includes(normalizedQuery))
-            return true;
-        if ((o.email || "").toLowerCase().includes(normalizedQuery))
-            return true;
-        // check item titles too
-        if (
-            o.items &&
-            o.items.some((it) =>
-                (it.title || "").toLowerCase().includes(normalizedQuery)
+
+        const q = normalizedQuery;
+
+        return (
+            o._id.toLowerCase().includes(q) ||
+            o.userInfo.nama.toLowerCase().includes(q) ||
+            o.status.toLowerCase().includes(q) ||
+            o.items.some((it: OrderItem) =>
+                it.namaItem.toLowerCase().includes(q)
             )
-        )
-            return true;
-        return false;
+        );
     });
 
     // pagination
@@ -280,7 +254,7 @@ export default function DashboardProfilePage() {
                                                     setQuery(e.target.value);
                                                     setCurrentPage(1);
                                                 }}
-                                                placeholder="Cari id pesanan atau nama pemesan..."
+                                                placeholder="Cari id pesanan, nama, status, atau item..."
                                                 className="pl-10 pr-4 py-2 rounded-full border border-slate-200 w-full"
                                             />
                                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -306,10 +280,10 @@ export default function DashboardProfilePage() {
                                     <div className="flex flex-wrap gap-3 mb-3">
                                         {[
                                             "Tanggal",
-                                            "Semua",
+                                            "All",
+                                            "Pending",
                                             "Paid",
                                             "Confirmed",
-                                            "Ready",
                                             "Complete",
                                             "Cancelled",
                                         ].map((t) => {
@@ -335,8 +309,7 @@ export default function DashboardProfilePage() {
                                     <div className="text-sm text-slate-500 mb-6">
                                         Menampilkan{" "}
                                         {totalItems === 0 ? 0 : startIndex + 1}{" "}
-                                        - {endIndex} dari {sampleOrders.length}{" "}
-                                        item
+                                        - {endIndex} dari {orders.length} item
                                     </div>
                                 </>
                             )}
@@ -467,9 +440,9 @@ export default function DashboardProfilePage() {
                                                 dengan pencarian.
                                             </div>
                                         ) : (
-                                            paginatedOrders.map((o) => (
+                                            paginatedOrders.map((o: Order) => (
                                                 <article
-                                                    key={o.id}
+                                                    key={o._id}
                                                     className="bg-white shadow rounded-xl border border-slate-100">
                                                     <header className="px-6 py-3 bg-[#c9c9c9] text-white rounded-t-lg flex items-center justify-between">
                                                         <div className="flex items-center gap-3">
@@ -478,11 +451,15 @@ export default function DashboardProfilePage() {
                                                             </div>
                                                             <div>
                                                                 <div className="text-sm text-[#0E3B7A] font-semibold">
-                                                                    {o.name}
+                                                                    {
+                                                                        o
+                                                                            .userInfo
+                                                                            ?.nama
+                                                                    }
                                                                 </div>
-                                                                <div className="text-xs text-[#0E3B7A] justify-right">
+                                                                <div className="text-xs text-[#0E3B7A]">
                                                                     No Pesanan:{" "}
-                                                                    {o.id}
+                                                                    {o._id}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -490,10 +467,14 @@ export default function DashboardProfilePage() {
                                                             {o.status}
                                                         </div>
                                                     </header>
+
                                                     <div className="p-6">
                                                         <div className="grid grid-cols-1 gap-4">
                                                             {o.items.map(
-                                                                (it, idx) => (
+                                                                (
+                                                                    it: OrderItem,
+                                                                    idx: number
+                                                                ) => (
                                                                     <div
                                                                         key={
                                                                             idx
@@ -508,11 +489,7 @@ export default function DashboardProfilePage() {
                                                                         <div className="col-span-1 sm:col-span-6">
                                                                             <div className="text-sm font-medium">
                                                                                 {
-                                                                                    it.day
-                                                                                }{" "}
-                                                                                -{" "}
-                                                                                {
-                                                                                    it.title
+                                                                                    it.namaItem
                                                                                 }
                                                                             </div>
                                                                         </div>
@@ -520,14 +497,13 @@ export default function DashboardProfilePage() {
                                                                         <div className="col-span-1 sm:col-span-1 text-center text-sm">
                                                                             x
                                                                             {
-                                                                                it.qty
+                                                                                it.jumlah
                                                                             }
                                                                         </div>
 
                                                                         <div className="col-span-1 sm:col-span-2 text-right text-sm">
-                                                                            {
-                                                                                it.price
-                                                                            }
+                                                                            Rp{" "}
+                                                                            {it.harga.toLocaleString()}
                                                                         </div>
 
                                                                         <div className="col-span-1 sm:col-span-1 text-center text-sm hidden sm:block">
@@ -537,8 +513,9 @@ export default function DashboardProfilePage() {
                                                                         </div>
 
                                                                         <div className="col-span-1 sm:col-span-1 text-right text-sm">
-                                                                            Pick
-                                                                            Up
+                                                                            {
+                                                                                o.metodePengambilan
+                                                                            }
                                                                         </div>
                                                                     </div>
                                                                 )

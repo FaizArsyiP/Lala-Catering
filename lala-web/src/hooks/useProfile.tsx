@@ -10,7 +10,7 @@ export type UserProfile = {
     alamatPengiriman: string;
     _id: string;
 };
-
+    
 export function useProfile() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
 
@@ -19,19 +19,18 @@ export function useProfile() {
 
         if (!token) return;
 
-        axios
-            .get(`${process.env.NEXT_PUBLIC_API_URL}/users/profile`, {
-                headers: {
-                    "x-auth-token": token,
-                },
-            })
-            .then((response) => {
-                setProfile(response.data);
-            })
-            .catch((error) => {
-                console.error("Failed to fetch profile:", error);
-                setProfile(null);
-            });
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/users/profile`, {
+            headers: {
+                "x-auth-token": token,
+            },
+        })
+        .then(response => {
+            setProfile(response.data);
+        })
+        .catch(error => {
+            console.error("Failed to fetch profile:", error);
+            setProfile(null);
+        });
     }, []);
 
     return profile;

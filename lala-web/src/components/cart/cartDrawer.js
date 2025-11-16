@@ -265,6 +265,7 @@ const CartDrawer = () => {
                                                         fontSize: "14px",
                                                         backgroundColor:
                                                             "7F7F7F",
+                                                        color: "#002683",
                                                     }}>
                                                     {item.quantity}
                                                 </span>
@@ -319,7 +320,7 @@ const CartDrawer = () => {
                         <span>Total</span>
                         <span>{formatPrice(totalAmount)}</span>
                     </div>
-                    <Link href="/order">
+                    <Link href="/konfirmasi-pesanan">
                         <button
                             onClick={() => setIsOpen(false)}
                             disabled={cart.length === 0}

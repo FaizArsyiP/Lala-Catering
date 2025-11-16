@@ -13,8 +13,7 @@ const jadwalRoutes = require("./routes/jadwalRoutes");
 
 const app = express();
 app.use(cors({
-  origin: "*", // Allow all origins untuk testing (ganti dengan domain spesifik di production)
-  credentials: true,
+  origin: "http://localhost:3000", 
   allowedHeaders: ["Content-Type", "x-auth-token"],  // <-- WAJIB
   methods: ["GET", "POST", "PUT", "DELETE"]
 }));
