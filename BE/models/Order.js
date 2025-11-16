@@ -25,7 +25,7 @@ const orderItemSchema = new mongoose.Schema({
 const deliverySchema = new mongoose.Schema({
     hari: {
         type: String,
-        enum: ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'],
+        enum: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
         required: true
     },
     tanggalPengiriman: {
@@ -57,14 +57,14 @@ const orderSchema = new mongoose.Schema({
     },
     // Multi-day deliveries
     deliveries: [deliverySchema],
-    // Week info
+    // Week info (optional - untuk backward compatibility)
     weekNumber: {
         type: Number,
-        required: true
+        required: false
     },
     year: {
         type: Number,
-        required: true
+        required: false
     },
     // Legacy support for old single-day orders
     items: [orderItemSchema],
@@ -80,17 +80,17 @@ const orderSchema = new mongoose.Schema({
     lokasiPengiriman: {
         lat: {
             type: Number,
-            required: true
+            required: false
         },
         lng: {
             type: Number,
-            required: true
+            required: false
         }
     },
     alamatPengirimanText: String,
     metodePengambilan: {
         type: String,
-        enum: ['delivery', 'pickup'],
+        enum: ['Kirim ke Lokasi', 'Ambil Sendiri'],
         required: true
     },
     status: {

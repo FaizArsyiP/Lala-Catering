@@ -4,7 +4,6 @@ import FormInput from '@/components/formInput';
 
 // Daftar Pilihan untuk Dropdown
 const deliveryOptions = ["Kirim ke Lokasi", "Ambil Sendiri"];
-const paymentOptions = ["QRIS", "Virtual Account"];
 
 const UserDetailsForm = ({ 
     userData, 
@@ -65,15 +64,6 @@ const UserDetailsForm = ({
                 type="text"
             />
             
-            {/* Dropdown Metode Bayar */}
-            <FormInput
-                label="Metode Bayar"
-                value={userData.paymentMethod}
-                onChange={(e) => handleChange('paymentMethod', e)}
-                editable={editable}
-                isSelect={true}
-                options={paymentOptions}
-            />
         </div>
     );
 };

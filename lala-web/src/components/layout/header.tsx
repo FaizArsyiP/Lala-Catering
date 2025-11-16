@@ -44,7 +44,7 @@ export const Header = () => {
     return (
         <header className="w-full
                         xs:min-h-[80px] tablet:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] xl:min-h-[160px] desk:min-h-[180px]
-                        flex items-center justify-center">
+                        flex items-center justify-center bg-[#002683]">
             
             {/* CONTENTS CONTAINER */}
             <div className="w-full
@@ -52,7 +52,7 @@ export const Header = () => {
                             xs:py-[5px] tablet:py-[7px] md:py-[8px] lg:py-[9px] xl:py-[9px] desk:py-[10px]
                             xs:min-h-[50px] tablet:min-h-[60px] md:min-h-[70px] lg:min-h-[80px] xl:min-h-[90px] desk:min-h-[100px]
                             flex items-center justify-between
-                            bg-white rounded-full">
+                            bg-white rounded-full mx-10">
 
                 {/* LEFT SIDE */}
                 <div className="xs:w-[180px] tablet:w-[200px] md:w-[220px] lg:w-[250px] xl:w-[280px] desk:w-[300px]

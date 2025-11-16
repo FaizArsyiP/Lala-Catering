@@ -1,58 +1,81 @@
 "use client";
 
-import axios from "axios";
+import api from "@/utils/axiosInstance";
 import { useEffect, useState } from "react";
 
-export type OrderItem = {
-    menuItemId: {
-        _id: string;
-        nama: string;
-        harga: number;
-    };
+export type DeliveryItem = {
+    menuItemId: string;
     namaItem: string;
     harga: number;
     jumlah: number;
     _id: string;
+    id: string;
+};
+
+export type Delivery = {
+    _id: string;
+    hari: string;
+    tanggalPengiriman: string;
+    items: DeliveryItem[];
+    subtotal: number;
+    statusDelivery: string;
 };
 
 export type Order = {
     _id: string;
-    status: string;
-    metodePengambilan: string;
     userInfo: {
         nama: string;
         nomorTelepon: string;
+        email: string;
     };
-    items: OrderItem[];
+    userId: string;
+    deliveries: Delivery[];
+    items: DeliveryItem[];
+    totalHarga: number;
+    alamatPengirimanText: string;
+    metodePengambilan: string;
+    status: string;
+    tanggalPesanan: string;
+    createdAt: string;
+    updatedAt: string;
+    midtransTransactionId: string;
+    isMultiDay: boolean;
+    deliveryProgress: string;
+    id: string;
 };
 
-export function useOrders() {
+export function useOrders(endpoint: string) {
     const [orders, setOrders] = useState<Order[]>([]);
-    const [loadingOrders, setLoadingOrders] = useState(true);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!endpoint) return;
+
         const token = localStorage.getItem("token");
         if (!token) {
-            setLoadingOrders(false);
+            setLoading(false);
             return;
         }
 
-        axios
-            .get(`${process.env.NEXT_PUBLIC_API_URL}/orders/myorders`, {
-                headers: {
-                    "x-auth-token": token,
-                },
-            })
+        api.get(endpoint, {
+            headers: {
+                "x-auth-token": token,
+            },
+        })
             .then((res) => {
-                setOrders(res.data); // ← data sesuai Postman
-                setLoadingOrders(false);
+                console.log("Data pesanan berhasil diambil:", res.data);
+                // Handle both single order and array of orders
+                const data = Array.isArray(res.data) ? res.data : [res.data];
+                setOrders(data);
+                setLoading(false);
             })
             .catch((err) => {
                 console.error("Gagal mengambil data pesanan:", err);
                 setOrders([]);
-                setLoadingOrders(false);
+                setLoading(false);
             });
-    }, []);
+    }, [endpoint]);
 
-    return { orders, loadingOrders };
+    return { orders, loading };
 }
+
