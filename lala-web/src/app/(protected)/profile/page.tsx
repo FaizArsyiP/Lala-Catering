@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import Header from "@/components/layout/header";
 import { useProfile } from "@/hooks/useProfile";
-import axios from "axios";
 import { useOrders } from "@/hooks/useOrders";
 import { IconUser } from "@/components/icons";
 import PesananList from "@/components/orderList";
+import api from "@/utils/axiosInstance";
 
 export default function DashboardProfilePage() {
     // State untuk tab
@@ -35,8 +35,8 @@ export default function DashboardProfilePage() {
     const handleSave = async () => {
         try {
             const token = localStorage.getItem("token");
-            await axios.put(
-                `${process.env.NEXT_PUBLIC_API_URL}/users/profile`,
+            await api.put(
+                `/users/profile`,
                 {
                     nama: formData.nama,
                     nomorTelepon: formData.nomorTelepon,
@@ -62,7 +62,7 @@ export default function DashboardProfilePage() {
             });
         }
     };
-    const { orders, loadingOrders } = useOrders("/orders/myorders");
+    const { order, loading } = useOrders("/orders/myorder");
 
     return (
         <div className="min-h-screen bg-white text-slate-800">
@@ -122,10 +122,7 @@ export default function DashboardProfilePage() {
                                     <h1 className="text-2xl font-bold text-[#EF6C6C] mb-3">
                                         Pesanan Saya
                                     </h1>
-                                    <PesananList
-                                        orders={orders}
-                                        loading={loadingOrders}
-                                    />
+                                    <PesananList order={order} loading={loading} />;
                                 </>
                             ) : (
                                 <>
@@ -245,8 +242,8 @@ export default function DashboardProfilePage() {
                 </>
             )}
 
-            {/* FUTERS */}
-            <footer className="h-20 bg-[#083170]" />
+            {/* FUTERS
+            <footer className="h-20 bg-[#083170]" /> */}
         </div>
     );
 }

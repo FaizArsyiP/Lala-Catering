@@ -3,39 +3,56 @@
 import api from "@/utils/axiosInstance";
 import { useEffect, useState } from "react";
 
-export type OrderItem = {
-    menuItemId: {
-        _id: string;
-        nama: string;
-        harga: number;
-    };
+export type DeliveryItem = {
+    menuItemId: string;
     namaItem: string;
     harga: number;
     jumlah: number;
+    _id: string;
+    id: string;
+};
+
+export type Delivery = {
+    hari: string;
+    tanggalPengiriman: string;
+    items: DeliveryItem[];
+    subtotal: number;
+    statusDelivery: string;
     _id: string;
 };
 
 export type Order = {
     _id: string;
-    status: string;
-    metodePengambilan: string;
     userInfo: {
         nama: string;
         nomorTelepon: string;
+        email: string;
     };
-    items: OrderItem[];
+    userId: string;
+    deliveries: Delivery[];
+    totalHarga: number;
+    alamatPengirimanText: string;
+    metodePengambilan: string;
+    status: string;
+    tanggalPesanan: string;
+    createdAt: string;
+    updatedAt: string;
+    midtransTransactionId: string;
+    isMultiDay: boolean;
+    deliveryProgress: string;
+    id: string;
 };
 
 export function useOrders(endpoint: string) {
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loadingOrders, setLoadingOrders] = useState(true);
+    const [order, setOrder] = useState<Order | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!endpoint) return;
 
         const token = localStorage.getItem("token");
         if (!token) {
-            setLoadingOrders(false);
+            setLoading(false);
             return;
         }
 
@@ -45,15 +62,17 @@ export function useOrders(endpoint: string) {
             },
         })
             .then((res) => {
-                setOrders(res.data);
-                setLoadingOrders(false);
+                console.log("Data pesanan berhasil diambil:", res.data);
+                setOrder(res.data); // BUKAN array
+                setLoading(false);
             })
             .catch((err) => {
                 console.error("Gagal mengambil data pesanan:", err);
-                setOrders([]);
-                setLoadingOrders(false);
+                setOrder(null);
+                setLoading(false);
             });
     }, [endpoint]);
 
-    return { orders, loadingOrders };
+    return { order, loading };
 }
+
