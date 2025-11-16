@@ -51,8 +51,6 @@ export default function DashboardProfilePage() {
             alert("Gagal memperbarui profil");
         }
     };
-    
-    // Fungsi ini gak ada di file asli lu, tapi dibutuhin buat tombol 'Cancel'
     const handleCancel = () => {
         setIsEditing(false);
         if (profile) {
@@ -64,7 +62,7 @@ export default function DashboardProfilePage() {
             });
         }
     };
-    const { orders, loadingOrders } = useOrders();
+    const { orders, loadingOrders } = useOrders("/orders/myorders");
 
     return (
         <div className="min-h-screen bg-white text-slate-800">
@@ -119,7 +117,6 @@ export default function DashboardProfilePage() {
 
                         {/* MAIN CONTENT */}
                         <main className="flex-1">
-                            
                             {activeTab === "pesanan" ? (
                                 <>
                                     <h1 className="text-2xl font-bold text-[#EF6C6C] mb-3">
@@ -138,11 +135,13 @@ export default function DashboardProfilePage() {
                                                 Akun Saya
                                             </h1>
                                         </div>
-                                        {!isEditing && ( 
+                                        {!isEditing && (
                                             <div>
                                                 <button
                                                     className="flex items-center gap-2 bg-[#EF6C6C] text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-[#d65555]"
-                                                    onClick={() => setIsEditing(true)}>
+                                                    onClick={() =>
+                                                        setIsEditing(true)
+                                                    }>
                                                     Edit Profile
                                                 </button>
                                             </div>
@@ -185,7 +184,8 @@ export default function DashboardProfilePage() {
                                                             setFormData({
                                                                 ...formData,
                                                                 nomorTelepon:
-                                                                    e.target.value,
+                                                                    e.target
+                                                                        .value,
                                                             })
                                                         }
                                                     />
@@ -215,7 +215,8 @@ export default function DashboardProfilePage() {
                                                             setFormData({
                                                                 ...formData,
                                                                 alamatPengiriman:
-                                                                    e.target.value,
+                                                                    e.target
+                                                                        .value,
                                                             })
                                                         }
                                                     />

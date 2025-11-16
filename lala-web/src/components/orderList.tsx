@@ -178,7 +178,7 @@ export default function PesananList({ orders, loading }: PesananListProps) {
                                     {o.items.map((it: OrderItem, idx: number) => (
                                         <div
                                             key={idx}
-                                            className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 py-3 border-b border-slate-100">
+                                            className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 py-3 border-b border-slate-100 text-[#0E3B7A]">
                                             <div className="col-span-1 flex items-center justify-start">
                                                 <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center">
                                                     <IconDish />

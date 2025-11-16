@@ -26,24 +26,26 @@ export type Order = {
     items: OrderItem[];
 };
 
-export function useOrders() {
+export function useOrders(endpoint: string) {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loadingOrders, setLoadingOrders] = useState(true);
 
     useEffect(() => {
+        if (!endpoint) return;
+
         const token = localStorage.getItem("token");
         if (!token) {
             setLoadingOrders(false);
             return;
         }
 
-        api.get(`/orders/myorders`, {
+        api.get(endpoint, {
             headers: {
                 "x-auth-token": token,
             },
         })
             .then((res) => {
-                setOrders(res.data); // ← data sesuai Postman
+                setOrders(res.data);
                 setLoadingOrders(false);
             })
             .catch((err) => {
@@ -51,7 +53,7 @@ export function useOrders() {
                 setOrders([]);
                 setLoadingOrders(false);
             });
-    }, []);
+    }, [endpoint]);
 
     return { orders, loadingOrders };
 }
