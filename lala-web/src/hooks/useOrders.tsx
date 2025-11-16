@@ -30,6 +30,7 @@ export type Order = {
     };
     userId: string;
     deliveries: Delivery[];
+    items: DeliveryItem[];
     totalHarga: number;
     alamatPengirimanText: string;
     metodePengambilan: string;
