@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "axios";
+import api from "@/utils/axiosInstance";
 import { useEffect, useState } from "react";
 
 export type OrderItem = {
@@ -37,12 +37,11 @@ export function useOrders() {
             return;
         }
 
-        axios
-            .get(`${process.env.NEXT_PUBLIC_API_URL}/orders/myorders`, {
-                headers: {
-                    "x-auth-token": token,
-                },
-            })
+        api.get(`/orders/myorders`, {
+            headers: {
+                "x-auth-token": token,
+            },
+        })
             .then((res) => {
                 setOrders(res.data); // ← data sesuai Postman
                 setLoadingOrders(false);

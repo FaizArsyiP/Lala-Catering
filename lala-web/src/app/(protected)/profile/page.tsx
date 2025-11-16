@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Header from "@/components/layout/header";
 import { useProfile } from "@/hooks/useProfile";
-import axios from "axios";
 import { useOrders, Order, OrderItem } from "@/hooks/useOrders";
+import api from "@/utils/axiosInstance";
 
 export default function DashboardProfilePage() {
     const router = useRouter();
@@ -52,8 +52,8 @@ export default function DashboardProfilePage() {
         try {
             const token = localStorage.getItem("token");
 
-            await axios.put(
-                `${process.env.NEXT_PUBLIC_API_URL}/users/profile`,
+            await api.put(
+                `/users/profile`,
                 {
                     nama: formData.nama,
                     nomorTelepon: formData.nomorTelepon,
