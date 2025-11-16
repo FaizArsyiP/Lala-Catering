@@ -9,10 +9,11 @@ import UserDetailsForm from "@/components/userDetailsForm";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/hooks/useProfile";
+import api from "@/utils/axiosInstance";
 
 const KonfirmasiPesananPage = () => {
     const router = useRouter();
-    const { cart, getTotal, totalItems } = useCart();
+    const { cart, getTotal, totalItems, clearCart } = useCart();
 
     const [userData, setUserData] = useState({
         name: "",
@@ -22,6 +23,8 @@ const KonfirmasiPesananPage = () => {
         address: "",
         paymentMethod: "",
     });
+
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const profile = useProfile();
 
@@ -36,7 +39,7 @@ const KonfirmasiPesananPage = () => {
         }
     }, [profile]);
 
-    const handleCheckout = () => {
+    const handleCheckout = async () => {
         if (cart.length === 0) {
             alert("Keranjang Anda kosong!");
             return;
@@ -51,9 +54,71 @@ const KonfirmasiPesananPage = () => {
             return;
         }
 
-        console.log("Data Pesanan:", { items: cart, user: userData });
+        setIsProcessing(true);
 
-        router.push("/payment");
+        try {
+            const token = localStorage.getItem("token");
+
+            // Format data: kelompokkan cart berdasarkan hari
+            const deliveriesMap = {};
+            cart.forEach((item) => {
+                if (!deliveriesMap[item.day]) {
+                    deliveriesMap[item.day] = [];
+                }
+                deliveriesMap[item.day].push({
+                    menuItemId: item.id,
+                    jumlah: item.quantity,
+                });
+            });
+
+            const deliveries = Object.keys(deliveriesMap).map((day) => ({
+                hari: day,
+                items: deliveriesMap[day],
+            }));
+
+            // Buat order
+            const orderResponse = await api.post("/orders/multi-day", {
+                deliveries,
+                lokasiPengiriman: userData.address,
+                metodePengambilan: userData.deliveryMethod || "diantar",
+            }, {
+                headers: { "x-auth-token": token },
+            });
+
+            const orderId = orderResponse.data.order._id;
+
+            // Get payment token
+            const checkoutResponse = await api.post(
+                `/orders/${orderId}/checkout`,
+                {},
+                { headers: { "x-auth-token": token } }
+            );
+
+            const snapToken = checkoutResponse.data.token;
+
+            // Tampilkan popup Midtrans
+            window.snap.pay(snapToken, {
+                onSuccess: function (result) {
+                    alert("Pembayaran berhasil!");
+                    clearCart();
+                    router.push("/myorders");
+                },
+                onPending: function (result) {
+                    alert("Menunggu pembayaran...");
+                    router.push("/myorders");
+                },
+                onError: function (result) {
+                    alert("Pembayaran gagal! Silakan coba lagi.");
+                },
+                onClose: function () {
+                    alert("Popup ditutup. Anda bisa melanjutkan pembayaran dari My Orders.");
+                },
+            });
+        } catch (err) {
+            alert(err.response?.data?.message || "Terjadi kesalahan saat checkout");
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -89,15 +154,17 @@ const KonfirmasiPesananPage = () => {
                             {/* Tombol Pesan */}
                             <button
                                 onClick={handleCheckout}
-                                disabled={cart.length === 0}
-                                className={`w-full py-4 mt-6 rounded-[20px] font-bold text-lg 
+                                disabled={cart.length === 0 || isProcessing}
+                                className={`w-full py-4 mt-6 rounded-[20px] font-bold text-lg
                                           transition-all shadow-md
                                           ${
-                                              cart.length > 0
+                                              cart.length > 0 && !isProcessing
                                                   ? "bg-[#E5713A] text-white hover:bg-[#D46029] hover:shadow-lg hover:scale-[1.02]"
                                                   : "bg-[#D9D9D9] text-[#9D9D9D] cursor-not-allowed"
                                           }`}>
-                                {cart.length > 0
+                                {isProcessing
+                                    ? "Memproses..."
+                                    : cart.length > 0
                                     ? "Pesan Sekarang"
                                     : "Keranjang Kosong"}
                             </button>
