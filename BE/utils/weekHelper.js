@@ -187,12 +187,45 @@ const formatDateRange = (start, end) => {
     return `${startStr} - ${endStr}`;
 };
 
+/**
+ * Get tanggal berikutnya untuk hari tertentu yang memenuhi H-1
+ * @param {String} hari - 'senin', 'selasa', dst
+ * @returns {Date} Tanggal terdekat untuk hari tersebut yang valid H-1
+ */
+const getNextDateForDay = (hari) => {
+    const days = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+    const targetDay = days.indexOf(hari.toLowerCase());
+
+    if (targetDay === -1) {
+        throw new Error('Invalid hari. Must be minggu-sabtu');
+    }
+
+    let date = new Date();
+    date.setHours(0, 0, 0, 0);
+
+    // Cari tanggal hari yang diminta yang memenuhi H-1 (minimal 24 jam)
+    // Loop sampai dapat hari yang sesuai DAN memenuhi H-1
+    let attempts = 0;
+    while (attempts < 14) { // Max 2 minggu
+        date.setDate(date.getDate() + 1);
+
+        if (date.getDay() === targetDay && isValidH1(date)) {
+            return date;
+        }
+
+        attempts++;
+    }
+
+    throw new Error(`Tidak dapat menemukan tanggal valid untuk ${hari}`);
+};
+
 module.exports = {
     getWeekNumber,
     getCurrentWeek,
     getWeekDateRange,
     generateDailySchedule,
     getDateFromDay,
+    getNextDateForDay,
     isValidH1,
     isSaturdayAfternoon,
     isSunday,

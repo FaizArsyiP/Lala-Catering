@@ -4,7 +4,7 @@ const User = require('../models/User');
 const { sendEmail } = require('../services/emailService');
 const midtransClient = require('midtrans-client');
 const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
-const { getCurrentWeek, getDateFromDay, isValidH1, formatDate } = require('../utils/weekHelper');
+const { getCurrentWeek, getDateFromDay, getNextDateForDay, isValidH1, formatDate } = require('../utils/weekHelper');
 
 const snap = new midtransClient.Snap({
     isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
@@ -70,32 +70,15 @@ const createOrder = async (req, res) => {
     }
 };
 
-// NEW: Multi-day order (Weekly system)
+// NEW: Multi-day order (Simplified - tanpa weekly schedule)
 const createMultiDayOrder = async (req, res) => {
     try {
-        const { deliveries, lokasiPengiriman, metodePengambilan, weekNumber, year } = req.body;
+        const { deliveries, lokasiPengiriman, metodePengambilan } = req.body;
         const user = await User.findById(req.user.id);
 
         // Validasi input
         if (!deliveries || !Array.isArray(deliveries) || deliveries.length === 0) {
             return res.status(400).json({ message: 'deliveries array required dan tidak boleh kosong' });
-        }
-
-        // Get atau validasi week
-        const currentWeek = getCurrentWeek();
-        const orderWeekNumber = weekNumber || currentWeek.weekNumber;
-        const orderYear = year || currentWeek.year;
-
-        // Check apakah ada menu dengan weekly schedule untuk minggu ini
-        const menusWithSchedule = await MenuItem.find({
-            'currentWeekSchedule.weekNumber': orderWeekNumber,
-            'currentWeekSchedule.year': orderYear
-        });
-
-        if (!menusWithSchedule || menusWithSchedule.length === 0) {
-            return res.status(404).json({
-                message: `Jadwal mingguan untuk minggu ${orderWeekNumber}/${orderYear} belum dibuat. Hubungi penjual.`
-            });
         }
 
         // Process deliveries
@@ -111,10 +94,17 @@ const createMultiDayOrder = async (req, res) => {
                 });
             }
 
-            // Get tanggal dari hari
-            const tanggalPengiriman = getDateFromDay(hari, orderWeekNumber, orderYear);
+            // Cari tanggal berikutnya untuk hari ini yang memenuhi H-1
+            let tanggalPengiriman;
+            try {
+                tanggalPengiriman = getNextDateForDay(hari);
+            } catch (err) {
+                return res.status(400).json({
+                    message: `Error menentukan tanggal untuk ${hari}: ${err.message}`
+                });
+            }
 
-            // Validasi H-1
+            // Validasi H-1 (seharusnya sudah valid dari getNextDateForDay, tapi double check)
             if (!isValidH1(tanggalPengiriman)) {
                 return res.status(400).json({
                     message: `Pemesanan untuk ${hari} (${formatDate(tanggalPengiriman)}) tidak valid. Minimal H-1 (24 jam sebelumnya).`
@@ -136,19 +126,10 @@ const createMultiDayOrder = async (req, res) => {
                     });
                 }
 
-                // Check apakah menu punya quota untuk hari ini
-                const quota = menuItem.getQuotaForDay(hari.toLowerCase());
-                if (!quota) {
-                    return res.status(404).json({
-                        message: `Menu ${menuItem.nama} tidak tersedia untuk ${hari} di minggu ini`
-                    });
-                }
-
-                // Check quota availability (belum dikurangi, hanya validasi)
-                const available = quota.quotaHarian - quota.terjual;
-                if (available < jumlah) {
+                // Check stok biasa (tidak pakai weekly schedule)
+                if (menuItem.stok < jumlah) {
                     return res.status(400).json({
-                        message: `Quota tidak cukup untuk ${menuItem.nama} di ${hari}. Tersedia: ${available}, diminta: ${jumlah}`
+                        message: `Stok tidak cukup untuk ${menuItem.nama}. Tersedia: ${menuItem.stok}, diminta: ${jumlah}`
                     });
                 }
 
@@ -175,7 +156,7 @@ const createMultiDayOrder = async (req, res) => {
             });
         }
 
-        // Create order
+        // Create order (tanpa weekNumber dan year)
         const newOrder = new Order({
             userId: req.user.id,
             userInfo: {
@@ -184,8 +165,6 @@ const createMultiDayOrder = async (req, res) => {
                 email: user.email
             },
             deliveries: processedDeliveries,
-            weekNumber: orderWeekNumber,
-            year: orderYear,
             totalHarga,
             lokasiPengiriman,
             alamatPengirimanText: user.alamatPengiriman,
@@ -426,9 +405,8 @@ const approveOrder = async (req, res) => {
 
         // Check if multi-day or single-day order
         if (order.isMultiDay) {
-            // NEW: Multi-day order - reduce quota dari MenuItem.currentWeekSchedule
+            // Multi-day order - reduce stok biasa (bukan quota)
             for (const delivery of order.deliveries) {
-                // Reduce terjual untuk setiap item
                 for (const item of delivery.items) {
                     const menuItem = await MenuItem.findById(item.menuItemId);
 
@@ -438,25 +416,39 @@ const approveOrder = async (req, res) => {
                         });
                     }
 
-                    try {
-                        // Increment terjual menggunakan method dari MenuItem
-                        await menuItem.incrementTerjual(delivery.hari, item.jumlah);
-                    } catch (err) {
+                    // Cek stok cukup
+                    if (menuItem.stok < item.jumlah) {
                         return res.status(400).json({
-                            message: err.message
+                            message: `Stok tidak cukup untuk ${menuItem.nama}. Tersedia: ${menuItem.stok}, dibutuhkan: ${item.jumlah}`
                         });
                     }
+
+                    // Kurangi stok
+                    menuItem.stok -= item.jumlah;
+                    await menuItem.save();
                 }
             }
 
         } else {
-            // OLD: Single-day order - reduce stock from MenuItem
+            // Single-day order - reduce stock from MenuItem
             for (const item of order.items) {
                 const menuItem = await MenuItem.findById(item.menuItemId);
-                if (menuItem) {
-                    menuItem.stok -= item.jumlah;
-                    await menuItem.save();
+                if (!menuItem) {
+                    return res.status(404).json({
+                        message: `Menu ${item.namaItem} tidak ditemukan.`
+                    });
                 }
+
+                // Cek stok cukup
+                if (menuItem.stok < item.jumlah) {
+                    return res.status(400).json({
+                        message: `Stok tidak cukup untuk ${menuItem.nama}. Tersedia: ${menuItem.stok}, dibutuhkan: ${item.jumlah}`
+                    });
+                }
+
+                // Kurangi stok
+                menuItem.stok -= item.jumlah;
+                await menuItem.save();
             }
         }
 
