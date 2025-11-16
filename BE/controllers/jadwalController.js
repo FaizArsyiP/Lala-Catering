@@ -203,6 +203,7 @@ const getWeeklySchedule = async (req, res) => {
                     menuTersedia.push({
                         menuId: menu._id,
                         nama: menu.nama,
+                        deskripsi: menu.deskripsi,
                         harga: menu.harga,
                         imageUrl: menu.imageUrl,
                         quotaHarian: quota.quotaHarian,
