@@ -30,12 +30,13 @@ const KonfirmasiPesananPage = () => {
 
     useEffect(() => {
         if (profile) {
-            setUserData({
+            setUserData((prev) => ({
+                ...prev,
                 name: profile.nama ?? "",
                 phone: profile.nomorTelepon ?? "",
                 email: profile.email ?? "",
                 address: profile.alamatPengiriman ?? "",
-            });
+            }));
         }
     }, [profile]);
 
@@ -77,13 +78,18 @@ const KonfirmasiPesananPage = () => {
             }));
 
             // Buat order
-            const orderResponse = await api.post("/orders/multi-day", {
-                deliveries,
-                lokasiPengiriman: userData.address,
-                metodePengambilan: userData.deliveryMethod || "Kirim ke Lokasi",
-            }, {
-                headers: { "x-auth-token": token },
-            });
+            const orderResponse = await api.post(
+                "/orders/multi-day",
+                {
+                    deliveries,
+                    lokasiPengiriman: userData.address,
+                    metodePengambilan:
+                        userData.deliveryMethod || "Kirim ke Lokasi",
+                },
+                {
+                    headers: { "x-auth-token": token },
+                }
+            );
 
             const orderId = orderResponse.data.order._id;
 
@@ -111,11 +117,15 @@ const KonfirmasiPesananPage = () => {
                     alert("Pembayaran gagal! Silakan coba lagi.");
                 },
                 onClose: function () {
-                    alert("Popup ditutup. Anda bisa melanjutkan pembayaran dari My Orders.");
+                    alert(
+                        "Popup ditutup. Anda bisa melanjutkan pembayaran dari My Orders."
+                    );
                 },
             });
         } catch (err) {
-            alert(err.response?.data?.message || "Terjadi kesalahan saat checkout");
+            alert(
+                err.response?.data?.message || "Terjadi kesalahan saat checkout"
+            );
         } finally {
             setIsProcessing(false);
         }
