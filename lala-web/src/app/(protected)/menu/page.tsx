@@ -4,9 +4,8 @@ import Header from "@/components/layout/header";
 import Search from "@/components/search";
 import DropdownFilter from "@/components/dropdownFilter";
 import CardMenu from "@/components/cardMenu";
-import axios from "axios";
-
 import React, { useState, useMemo, useEffect } from "react";
+import api from "@/utils/axiosInstance";
 
 interface ApiMenuItem {
     menuId: string;
@@ -46,8 +45,8 @@ const Page = () => {
         const fetchMenu = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const res = await axios.get(
-                    `${process.env.NEXT_PUBLIC_API_URL}/jadwal/mingguan`,
+                const res = await api.get(
+                    `/jadwal/mingguan`,
                     {
                         headers: {
                             "x-auth-token": token,
@@ -123,7 +122,7 @@ const Page = () => {
             <Header />
 
             <div className="max-w-[1140px] mx-auto">
-                <div className="sticky top-0 z-10 py-2  mb-5 bg-white ease-in-out w-full ">
+                <div className="sticky top-0 z-10 py-2  mb-5 ease-in-out w-full bg-transparent ">
                     <div className="w-fit flex items-start gap-[10px]">
                         <div className="flex-1">
                             <Search

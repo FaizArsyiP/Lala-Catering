@@ -49,7 +49,7 @@ const CardMenu = ({
     };
 
   return (
-    <div className='h-[370px] w-[260px] border-2 border-[#E5713A] rounded-[20px] overflow-hidden flex flex-col'>
+    <div className='h-[370px] w-[260px] border-2 border-[#E5713A] rounded-[20px] overflow-hidden flex flex-col bg-white '>
         <div className='w-full h-[200px] relative border-b-2 border-b-[#E5713A] overflow-hidden mb-2'> 
             <Image
                 src={imageSrc}
@@ -59,9 +59,9 @@ const CardMenu = ({
             />
         </div>
 
-        <div className='flex flex-col gap-0.5 mx-4 mb-4 flex-grow'> 
-            <h3 className='text-[18px] font-semibold text-[#002683]'>{name} </h3>
-            <p className='text-[11px] text-[#5B5B5B] leading-tight overflow-hidden'>{description} </p>
+        <div className='flex flex-col gap-0.5 mx-4 mb-4 flex-grow '> 
+            <h3 className='text-2xl font-semibold text-[#002683]'>{name} </h3>
+            <p className='text-lg text-[#5B5B5B] leading-tight overflow-hidden'>{description} </p>
         </div>
 
         <div className='flex justify-between items-center mx-4 mb-4 mt-auto'>
