@@ -16,7 +16,7 @@ export default function AdminLayout({ children }) {
                 return;
             }
 
-            if (user.role !== "admin") {
+            if (user.role !== "penjual") {
                 router.replace("/unauthorized");
                 return;
             }

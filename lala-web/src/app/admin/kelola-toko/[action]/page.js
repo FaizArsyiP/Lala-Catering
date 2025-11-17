@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { IoArrowBackOutline } from "react-icons/io5";
 import MenuForm from '@/components/admin/menuForm';
+import Image from 'next/image';
 
 // --- MOCK DATABASE ---
 const MOCK_MENU_DATABASE = {
@@ -206,7 +207,7 @@ const MenuActionPage = () => {
                 {/* Row 1 */}
                 <div className="flex items-center gap-4 cursor-pointer border-b-2 border-transparent hover:border-[#E5713A] transition-all"
                     onClick={handleBack}>
-                    <img src="/assets/icons/arrow-back.svg" alt="Kembali" className="w-10 h-10" />
+                    <Image src="/assets/icons/arrow-back.svg" alt="Kembali" className="w-10 h-10" />
                     <h2 className="text-[#E5713A] text-[40px] font-semibold">Kelola Toko</h2>
                 </div>
 
@@ -226,7 +227,7 @@ const MenuActionPage = () => {
                     onClick={handleEdit}
                     className="px-6 py-3 bg-[#E5713A] text-white font-semibold rounded-xl hover:bg-[#d65535] transition-all flex items-center gap-2"
                     >
-                    <img src="/assets/icons/edit-button.svg" alt="Edit" className="w-5 h-5" />
+                    <Image src="/assets/icons/edit-button.svg" alt="Edit" className="w-5 h-5" />
                     Edit Menu
                     </button>
 
@@ -234,7 +235,7 @@ const MenuActionPage = () => {
                     onClick={handleDelete}
                     className="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all flex items-center gap-2"
                     >
-                    <img src="/assets/icons/delete-button.svg" alt="Hapus" className="w-5 h-5" />
+                    <Image src="/assets/icons/delete-button.svg" alt="Hapus" className="w-5 h-5" />
                     Hapus Menu
                     </button>
                 </div>
@@ -256,14 +257,14 @@ const MenuActionPage = () => {
                     <button
                     onClick={handleCancel}
                     className="px-6 py-3 border-2 border-[#002683] text-[rgb(0,38,131)] font-bold rounded-xl hover:bg-[#F7F7F7] transition-all flex items-center gap-2">
-                    <img src="/assets/icons/cancel-button.svg" alt="Batal" className="w-5 h-5" />
+                    <Image src="/assets/icons/cancel-button.svg" alt="Batal" className="w-5 h-5" />
                     Batal
                     </button>
 
                     <button
                     onClick={handleSubmit}
                     className="px-6 py-3 bg-[#E5713A] text-white font-semibold rounded-xl hover:bg-[#d65535] transition-all flex items-center gap-2">
-                    <img src="/assets/icons/save-button.svg" alt="Simpan" className="w-5 h-5" />
+                    <Image src="/assets/icons/save-button.svg" alt="Simpan" className="w-5 h-5" />
                     {getSubmitButtonText()}
                     </button>
                 </div>

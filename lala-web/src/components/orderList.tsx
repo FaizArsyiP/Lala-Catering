@@ -290,7 +290,7 @@ export default function PesananList({ orders, loading, isAdmin = false }: Pesana
                             setCurrentPage(1);
                         }}
                         placeholder="Cari id pesanan, nama, status, atau item..."
-                        className="pl-10 pr-4 py-2 rounded-full border border-slate-200 w-full"
+                        className="pl-10 pr-4 py-2 rounded-full border border-slate-200 w-full text-[#0E3B7A]"
                     />
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                         <IconSearch />

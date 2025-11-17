@@ -11,7 +11,7 @@ api.interceptors.response.use(
         if (error.response?.status === 401) {
             // Hapus token
             localStorage.removeItem("token");
-            localStorage.removeItem("userId");
+            localStorage.removeItem("user");
 
             // Redirect ke homepage
             window.location.href = "/";

@@ -23,7 +23,13 @@ export default function LoginPage() {
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
             window.dispatchEvent(new Event("authStateChanged"));
-            router.push("/");
+
+            if (res.data.user.role === "penjual") {
+                router.push("/admin");
+                return;
+            }else{
+                router.push("/");
+            }
         } catch (error) {
             console.error("Google login error:", error);
         }
