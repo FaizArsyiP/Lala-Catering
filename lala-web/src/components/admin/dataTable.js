@@ -41,6 +41,12 @@
                         </div>
                     );
 
+            case 'currency':
+                return (
+                    <span className="text-[#002683] text-[14px]">
+                        {formatPrice(value)}
+                    </span>
+                );
                 case "currency":
                     return (
                         <span className="text-[#002683] text-[16px]">
@@ -48,6 +54,12 @@
                         </span>
                     );
 
+            case 'quantity':
+                return (
+                    <span className="text-[#002683] text-[14px]">
+                        x{value}
+                    </span>
+                );
                 case "quantity":
                     return (
                         <span className="text-[#002683] text-[16px]">x{value}</span>
@@ -66,6 +78,15 @@
                         </span>
                     );
 
+            case 'text':
+            default:
+                return (
+                    <span className="text-[#002683] text-[14px]">
+                        {value}
+                    </span>
+                );
+        }
+    };
                 case "text":
                 default:
                     return (
@@ -74,6 +95,26 @@
             }
         };
 
+    return (
+        <div className="bg-white rounded-[20px] shadow-md overflow-hidden">
+            <div className="overflow-x-auto">
+                <table className="w-full">
+                    
+                    {/* HEADER */}
+                    <thead className="bg-[#002683]">
+                        <tr>
+                            {columns.map((column, index) => (
+                                <th
+                                    key={index}
+                                    className={`px-6 py-4 font-semibold text-white text-[16px]
+                                        ${column.align === 'center' ? 'text-center' : ''}
+                                        ${column.align === 'right' ? 'text-right' : 'text-left'}`}
+                                >
+                                    {column.label}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
         return (
             <div className="bg-white rounded-[20px] shadow-md overflow-hidden">
                 <div className="overflow-x-auto">
@@ -101,48 +142,43 @@
                             </tr>
                         </thead>
 
-                        {/* BODY */}
-                        <tbody>
-                            {data.length === 0 ? (
-                                // Empty State
-                                <tr>
-                                    <td
-                                        colSpan={columns.length}
-                                        className="px-6 py-5 text-center text-[#5B5B5B]">
-                                        <p className="text-lg">Tidak ada data</p>
-                                    </td>
+                    {/* BODY */}
+                    <tbody>
+                        {data.length === 0 ? (
+                            // Empty State
+                            <tr>
+                                <td 
+                                    colSpan={columns.length}
+                                    className="px-6 py-5 text-center text-[#5B5B5B]"
+                                >
+                                    <p className="text-lg">Tidak ada data</p>
+                                </td>
+                            </tr>
+                        ) : (
+                            // Data Rows
+                            data.map((row, rowIndex) => (
+                                <tr
+                                    key={rowIndex}
+                                    className={`border-b border-[#D9D9D9] hover:bg-[#F7F7F7] transition-colors`}
+                                >
+                                    {columns.map((column, colIndex) => (
+                                        <td
+                                            key={colIndex}
+                                            className={`px-6 py-4
+                                                ${column.align === 'center' ? 'text-center' : ''}
+                                                ${column.align === 'right' ? 'text-right' : 'text-left'}`}
+                                        >
+                                            {renderCell(column, row)}
+                                        </td>
+                                    ))}
                                 </tr>
-                            ) : (
-                                // Data Rows
-                                data.map((row, rowIndex) => (
-                                    <tr
-                                        key={rowIndex}
-                                        className={`border-b border-[#D9D9D9] hover:bg-[#F7F7F7] transition-colors`}>
-                                        {columns.map((column, colIndex) => (
-                                            <td
-                                                key={colIndex}
-                                                className={`px-6 py-4
-                                                    ${
-                                                        column.align === "center"
-                                                            ? "text-center"
-                                                            : ""
-                                                    }
-                                                    ${
-                                                        column.align === "right"
-                                                            ? "text-right"
-                                                            : "text-left"
-                                                    }`}>
-                                                {renderCell(column, row)}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                            ))
+                        )}
+                    </tbody>
+                </table>
             </div>
-        );
-    };
+        </div>
+    );
+};
 
-    export default DataTable;
+export default DataTable;
