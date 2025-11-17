@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import Header from "@/components/layout/header";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
@@ -31,9 +32,17 @@ export default function LoginPage() {
         console.error("Google login failed");
     };
     return (
-        <>
-            <Header />
-            <div className="min-h-[calc(100vh-160px)] bg-white flex items-center justify-center">
+        <div className="overflow-x-hidden w-screen h-screen bg-white flex justify-center items-center">
+
+            <div className="w-full h-full mx-[12vw]">
+
+                {/* HEADER */}
+                <div className="w-full">
+                    <Header />
+                </div>
+
+                {/* PAGE CONTENT */}
+                <div className="h-[calc(100vh-var(--header-height))] bg-white flex items-center justify-center">
                 <div className="w-[84.531vw] flex items-center ">
                     {/* LEFT SIDE */}
                     <div className="text-black w-1/2 flex flex-col  justify-center gap-4 p-4">
@@ -42,6 +51,7 @@ export default function LoginPage() {
                             Nikmati kemudahan memesan menu favorit setiap minggu
                             hanya dengan sekali login.
                         </p>
+
 
                         <div className=" self-center  ">
                             <GoogleLogin
@@ -53,6 +63,20 @@ export default function LoginPage() {
                                 text="signin"
                             />
                         </div>
+
+
+                        <p className="text-xl self-center">
+                            Belum punya akun?{" "}
+                            <Link
+                                href="/register"
+                                className="text-[#E5713A]
+                        relative inline-block
+                        cursor-pointer
+                        after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-[#E5713A]
+                        after:transition-all after:duration-300 hover:after:w-full">
+                                Daftar di sini
+                            </Link>
+                        </p>
                     </div>
                     {/* IMAGE */}
                     <div className=" w-1/2 flex justify-center items-center">
@@ -65,7 +89,10 @@ export default function LoginPage() {
                         />
                     </div>
                 </div>
+                </div>
+
             </div>
-        </>
+
+        </div>
     );
 }
