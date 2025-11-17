@@ -7,11 +7,13 @@ import { todayMenu as TodayMenu } from "@/components/layout/landingPage/todayMen
 
 export default function HomePage() {
     return (
-         <main className="w-full min-h-screen bg-[#002683]">
+        <main className="w-full min-h-screen bg-[#002683]">
             <Header />
             <HeroSection />
             <ProfileSection />
-            <TodayMenu />
+            <div className="flex justify-center items-center">
+                <TodayMenu />
+            </div>
         </main>
     );
 }
