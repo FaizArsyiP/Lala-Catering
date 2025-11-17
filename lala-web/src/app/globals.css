@@ -17,6 +17,16 @@
   --font-stanger: 'Stanger', Arial, sans-serif;
 }
 
+@layer utilities {
+  .shadow-elev{
+    box-shadow: 0 5px 10px 2px rgba(0, 0, 0, 0.08);
+  }
+
+  .flip-vertical{
+    transform: scaleY(-1);
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
