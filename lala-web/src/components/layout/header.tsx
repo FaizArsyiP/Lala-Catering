@@ -42,9 +42,7 @@ export const Header = () => {
 
     const handleLogout = () => {
         localStorage.removeItem("token");
-        window.dispatchEvent(new Event("authStateChanged"));
         setIsLoggedIn(false);
-        router.push("/");
         router.refresh();
     };
 
@@ -55,7 +53,7 @@ export const Header = () => {
             className="
                 w-full
                 xs:hidden tablet:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] xl:min-h-[160px] desk:min-h-[180px]
-                flex items-center justify-center bg-[#002683] px-[15vw]
+                flex items-center justify-center px-[15vw]
                 sticky top-0 z-[100]
             "
         >
@@ -67,7 +65,7 @@ export const Header = () => {
                 xs:min-h-[30px] tablet:min-h-[40px] md:min-h-[50px] lg:min-h-[60px] xl:min-h-[70px] desk:min-h-[80px]
                 flex items-center justify-between
                 bg-white rounded-full shadow-elev
-             mx-10">
+            ">
                 {/* LEFT SIDE */}
                 <div className="w-[300px] h-full flex items-center justify-between">
                     {/* LOGO */}
