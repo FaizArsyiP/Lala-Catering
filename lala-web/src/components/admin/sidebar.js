@@ -76,7 +76,7 @@ const AdminSidebar = () => {
                             />
                         </div>
 
-                        <span>Dashboard</span>
+                        <span>Kelola Toko</span>
                     </div>
                 </Link>
             </nav>

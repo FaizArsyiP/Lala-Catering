@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { IoChevronDown } from "react-icons/io5";
 
-const DropdownFilter = ({ name, options, value, onSelect }) => {
+const DropdownFilter = ({ name, options, value, onSelect, allowReset = true }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDropdown = () => setIsOpen(prev => !prev);
@@ -13,7 +13,13 @@ const DropdownFilter = ({ name, options, value, onSelect }) => {
     setIsOpen(false);
   };
 
-  const optionsWithClear = [null, ...options];
+  const displayValue = value ? String(value) : null;
+  
+  const formattedDisplay = displayValue 
+    ? displayValue.charAt(0).toUpperCase() + displayValue.slice(1) 
+    : name;
+
+    const optionsWithClear = allowReset ? [null, ...options] : options;
 
   return (
     <div className="relative w-fit">
@@ -23,7 +29,7 @@ const DropdownFilter = ({ name, options, value, onSelect }) => {
         className="w-full h-[60px] px-5 bg-white border-2 border-[#E5713A] rounded-[20px] gap-5 flex justify-between items-center"
       >
         <span className="text-[20px] text-[#E5713A] font-semibold">
-          {value ? value.charAt(0).toUpperCase() + value.slice(1) : name}
+          {formattedDisplay}
         </span>
 
         <IoChevronDown
@@ -40,10 +46,13 @@ const DropdownFilter = ({ name, options, value, onSelect }) => {
           {optionsWithClear.map((option, index) => (
             <li
               key={index}
-              className="px-4 py-2 text-[#5B5B5B] cursor-pointer hover:bg-[#D9D9D9]"
+              className={`px-5 py-3 text-[#5B5B5B] cursor-pointer text-[14px] transition-colors
+                ${option === null ? 'text-[#5B5B5B] border-b border-slate-100' : 'hover:bg-[#F8F4F2]'}
+                ${value === option ? 'bg-[#F8F4F2]' : ''}
+              `}
               onClick={() => handleSelect(option)}
             >
-              {option ?? "Reset Filter"}
+              {option ?? `Reset ${name}`}
             </li>
           ))}
         </ul>
