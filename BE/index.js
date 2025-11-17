@@ -12,10 +12,28 @@ const jadwalRoutes = require("./routes/jadwalRoutes");
 // const faqRoutes = require("./routes/faqRoutes");
 
 const app = express();
+
+// CORS configuration - allow both localhost and production
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  process.env.FRONTEND_URL // Nanti diisi URL frontend production
+].filter(Boolean); // Remove undefined values
+
 app.use(cors({
-  origin: "http://localhost:3000", 
-  allowedHeaders: ["Content-Type", "x-auth-token"],  // <-- WAJIB
-  methods: ["GET", "POST", "PUT", "DELETE"]
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  allowedHeaders: ["Content-Type", "x-auth-token"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
 }));
 
 app.use(express.json());
@@ -24,6 +42,22 @@ app.use(express.json());
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB error:", err));
+
+// Health check endpoint
+app.get("/", (req, res) => {
+  res.json({
+    message: "Lala Catering API is running!",
+    status: "OK",
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "healthy",
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected"
+  });
+});
 
 // Routes
 app.use("/api/users", userRoutes);
