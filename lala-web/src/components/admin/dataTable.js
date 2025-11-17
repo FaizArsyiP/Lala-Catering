@@ -43,21 +43,11 @@ const DataTable = ({ columns = [], data = [] }) => {
 
             case "currency":
                 return (
-                    <span className="text-[#002683] text-[14px]">
-                        {formatPrice(value)}
-                    </span>
-                );
-            case "currency":
-                return (
                     <span className="text-[#002683] text-[16px]">
                         {formatPrice(value)}
                     </span>
                 );
 
-            case "quantity":
-                return (
-                    <span className="text-[#002683] text-[14px]">x{value}</span>
-                );
             case "quantity":
                 return (
                     <span className="text-[#002683] text-[16px]">x{value}</span>

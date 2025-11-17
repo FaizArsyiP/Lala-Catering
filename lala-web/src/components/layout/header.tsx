@@ -133,7 +133,7 @@ export const Header = () => {
                     </div>
 
                     {/* SIGN IN/OUT BUTTON */}
-                    <div className="w-full bg-[#E5713A] h-full rounded-full">
+                    <div className=" h-full rounded-full flex items-center justify-center">
                         {isLoggedIn ? (
                             <div className="relative">
                                 <button onClick={() => setMenuOpen(!menuOpen)}>
@@ -162,9 +162,9 @@ export const Header = () => {
                                 href="/signin"
                                 className="
                                     xs:px-3 xs:py-1.5 tablet:px-4 tablet:py-1.5 md:px-5 md:py-2 lg:px-5 lg:py-2 xl:px-6 xl:py-2 desk:px-6 desk:py-2
-                                    text-white rounded-full 
+                                    text-white rounded-full bg-[#E5713A] 
                                     xs:text-xs tablet:text-base md:text-md lg:text-lg xl:text-xl
-                                    font-century-gothic-bold hover:bg-gray-800 transition-colors whitespace-nowrap
+                                    font-century-gothic-bold hover:bg-gray-800 transition-colors whitespace-nowrap h-full
                                 "
                             >
                                 SIGN IN
