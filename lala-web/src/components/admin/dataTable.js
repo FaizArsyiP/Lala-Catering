@@ -38,7 +38,7 @@ const DataTable = ({
                             />
                         </div>
                         {column.showName && (
-                            <span className="text-[#002683] text-[16px]">
+                            <span className="text-[#002683] text-[14px]">
                                 {rowData[column.nameKey || 'name']}
                             </span>
                         )}
@@ -47,14 +47,14 @@ const DataTable = ({
 
             case 'currency':
                 return (
-                    <span className="text-[#002683] text-[16px]">
+                    <span className="text-[#002683] text-[14px]">
                         {formatPrice(value)}
                     </span>
                 );
 
             case 'quantity':
                 return (
-                    <span className="text-[#002683] text-[16px]">
+                    <span className="text-[#002683] text-[14px]">
                         x{value}
                     </span>
                 );
@@ -71,7 +71,7 @@ const DataTable = ({
             case 'text':
             default:
                 return (
-                    <span className="text-[#002683] text-[16px]">
+                    <span className="text-[#002683] text-[14px]">
                         {value}
                     </span>
                 );
@@ -89,7 +89,7 @@ const DataTable = ({
                             {columns.map((column, index) => (
                                 <th
                                     key={index}
-                                    className={`px-6 py-4 font-semibold text-white
+                                    className={`px-6 py-4 font-semibold text-white text-[16px]
                                         ${column.align === 'center' ? 'text-center' : ''}
                                         ${column.align === 'right' ? 'text-right' : 'text-left'}`}
                                 >

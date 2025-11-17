@@ -62,7 +62,7 @@ const DashboardAdmin = () => {
 
     return (
         <div>
-            <h2 className="text-[36px] font-semibold text-[#E5713A] mb-4">
+            <h2 className="text-[40px] font-semibold text-[#E5713A] mb-4">
                 Dashboard
             </h2>
 
