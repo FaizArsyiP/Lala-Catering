@@ -42,9 +42,7 @@ export const Header = () => {
 
     const handleLogout = () => {
         localStorage.removeItem("token");
-        window.dispatchEvent(new Event("authStateChanged"));
         setIsLoggedIn(false);
-        router.push("/");
         router.refresh();
     };
 
@@ -55,7 +53,7 @@ export const Header = () => {
             className="
                 w-full
                 xs:hidden tablet:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] xl:min-h-[160px] desk:min-h-[180px]
-                flex items-center justify-center bg-[#002683] px-[15vw]
+                flex items-center justify-center px-[15vw]
                 sticky top-0 z-[100]
             "
         >
@@ -67,7 +65,7 @@ export const Header = () => {
                 xs:min-h-[30px] tablet:min-h-[40px] md:min-h-[50px] lg:min-h-[60px] xl:min-h-[70px] desk:min-h-[80px]
                 flex items-center justify-between
                 bg-white rounded-full shadow-elev
-             mx-10">
+            ">
                 {/* LEFT SIDE */}
                 <div className="w-[300px] h-full flex items-center justify-between">
                     {/* LOGO */}
@@ -135,7 +133,7 @@ export const Header = () => {
                     </div>
 
                     {/* SIGN IN/OUT BUTTON */}
-                    <div className="w-full bg-[#E5713A] h-full rounded-full">
+                    <div className=" h-full rounded-full flex items-center justify-center">
                         {isLoggedIn ? (
                             <div className="relative">
                                 <button onClick={() => setMenuOpen(!menuOpen)}>
@@ -164,9 +162,9 @@ export const Header = () => {
                                 href="/signin"
                                 className="
                                     xs:px-3 xs:py-1.5 tablet:px-4 tablet:py-1.5 md:px-5 md:py-2 lg:px-5 lg:py-2 xl:px-6 xl:py-2 desk:px-6 desk:py-2
-                                    text-white rounded-full 
+                                    text-white rounded-full bg-[#E5713A] 
                                     xs:text-xs tablet:text-base md:text-md lg:text-lg xl:text-xl
-                                    font-century-gothic-bold hover:bg-gray-800 transition-colors whitespace-nowrap
+                                    font-century-gothic-bold hover:bg-gray-800 transition-colors whitespace-nowrap h-full
                                 "
                             >
                                 SIGN IN

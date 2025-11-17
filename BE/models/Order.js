@@ -95,7 +95,7 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'confirmed', 'canceled', 'paid', 'completed'],
+        enum: ['pending', 'paid', 'confirmed', 'ready', 'completed', 'canceled'],
         default: 'pending'
     },
     midtransTransactionId: {

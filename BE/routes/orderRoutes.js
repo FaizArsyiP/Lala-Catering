@@ -10,8 +10,10 @@ const {
     generateInvoice,
     approveOrder,
     rejectOrder,
+    markOrderReady,
     completeOrder,
-    updateDeliveryStatus
+    updateDeliveryStatus,
+    testChangeStatus
 } = require('../controllers/orderController');
 const authMiddleware = require('../middleware/auth');
 
@@ -26,10 +28,14 @@ router.post('/:id/checkout', authMiddleware(['pembeli']), checkout);            
 router.get('/', authMiddleware(['penjual']), getOrders);                               // GET /api/orders - Get all orders
 router.post('/:id/approve', authMiddleware(['penjual']), approveOrder);                // POST /api/orders/:id/approve - Approve paid order
 router.post('/:id/reject', authMiddleware(['penjual']), rejectOrder);                  // POST /api/orders/:id/reject - Reject paid order with refund
-router.post('/:id/complete', authMiddleware(['penjual']), completeOrder);              // POST /api/orders/:id/complete - Mark order as completed
+router.post('/:id/ready', authMiddleware(['penjual']), markOrderReady);                // POST /api/orders/:id/ready - Mark order as ready (confirmed → ready)
+router.post('/:id/complete', authMiddleware(['pembeli', 'penjual']), completeOrder);   // POST /api/orders/:id/complete - Mark order as completed (ready → completed)
 router.post('/:id/delivery/:deliveryId/status', authMiddleware(['penjual']), updateDeliveryStatus); // POST /api/orders/:id/delivery/:deliveryId/status - Update delivery status (NEW)
 
 // Midtrans webhook
 router.post('/payment/callback', handleMidtransCallback);                              // POST /api/orders/payment/callback - Midtrans payment notification
+
+// ⚠️ TESTING ONLY - Manual status change (disable di production!)
+router.post('/:id/test-status', authMiddleware(['pembeli', 'penjual']), testChangeStatus);  // POST /api/orders/:id/test-status - Change order status manually for testing
 
 module.exports = router;

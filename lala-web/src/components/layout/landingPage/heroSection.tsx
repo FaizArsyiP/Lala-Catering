@@ -1,8 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export const HeroSection = () => {
+    const router = useRouter();
+
     return (
         <section
             className="
@@ -97,7 +100,9 @@ export const HeroSection = () => {
                         font-century-gothic-bold
                         text-white
                         transition-colors hover:bg-[#ff7a28]
+                        cursor-pointer
                     "
+                    onClick={() => router.push("/menu")}
                 >
                     Lihat Menu
                 </button>

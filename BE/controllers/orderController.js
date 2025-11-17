@@ -193,7 +193,41 @@ const getOrders = async (req, res) => {
     }
 };
 
-// Complete order (confirmed → completed)
+// Mark order as ready (confirmed → ready) - Seller marks as ready for pickup/delivery
+const markOrderReady = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const order = await Order.findById(id).populate('userId', 'nama email');
+
+        if (!order) {
+            return res.status(404).json({ message: 'Pesanan tidak ditemukan.' });
+        }
+
+        // Only allow for confirmed orders
+        if (order.status !== 'confirmed') {
+            return res.status(400).json({ message: 'Hanya pesanan dengan status "confirmed" yang dapat ditandai ready.' });
+        }
+
+        // Update status to ready
+        order.status = 'ready';
+        await order.save();
+
+        // Send email notification
+        if (order.userId && order.userId.email) {
+            sendEmail(
+                order.userId.email,
+                'Pesanan Siap Diambil/Dikirim',
+                `Halo ${order.userId.nama},\n\nPesanan Anda (ID: ${order._id}) sudah siap untuk diambil/dikirim!\n\nTerima kasih telah memesan di Lala Catering!`
+            );
+        }
+
+        res.json({ message: 'Pesanan berhasil ditandai ready.', order });
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+// Complete order (ready → completed) - Customer confirms receipt
 const completeOrder = async (req, res) => {
     try {
         const { id } = req.params;
@@ -203,9 +237,9 @@ const completeOrder = async (req, res) => {
             return res.status(404).json({ message: 'Pesanan tidak ditemukan.' });
         }
 
-        // Only allow completion for confirmed orders
-        if (order.status !== 'confirmed') {
-            return res.status(400).json({ message: 'Hanya pesanan dengan status "confirmed" yang dapat diselesaikan.' });
+        // Only allow completion for ready orders
+        if (order.status !== 'ready') {
+            return res.status(400).json({ message: 'Hanya pesanan dengan status "ready" yang dapat diselesaikan.' });
         }
 
         // Update status to completed
@@ -487,7 +521,10 @@ const rejectOrder = async (req, res) => {
             return res.status(400).json({ message: 'Hanya pesanan dengan status "paid" yang dapat ditolak.' });
         }
 
-        // Trigger Midtrans refund
+        // ⚠️ LOCALHOST MODE: Skip Midtrans refund API (hanya notifikasi)
+        // Untuk production, uncomment code di bawah untuk actual refund via Midtrans
+
+        /* PRODUCTION MODE - Uncomment untuk actual Midtrans refund:
         if (order.midtransTransactionId) {
             try {
                 const refundParams = {
@@ -497,6 +534,7 @@ const rejectOrder = async (req, res) => {
                 };
 
                 await coreApi.refund(order.midtransTransactionId, refundParams);
+                console.log('Midtrans refund successful');
 
             } catch (midtransErr) {
                 console.error('Midtrans refund error:', midtransErr);
@@ -505,6 +543,14 @@ const rejectOrder = async (req, res) => {
                     error: midtransErr.message
                 });
             }
+        }
+        */
+
+        // LOCALHOST: Cukup log saja, tidak actual refund
+        if (order.midtransTransactionId) {
+            console.log(`[TESTING] Refund will be processed for order ${order._id}`);
+            console.log(`[TESTING] Amount: Rp ${order.totalHarga}`);
+            console.log(`[TESTING] Reason: ${reason || 'Kapasitas tidak mencukupi'}`);
         }
 
         // Update status to canceled
@@ -578,6 +624,46 @@ const updateDeliveryStatus = async (req, res) => {
     }
 };
 
+// ⚠️ TESTING ONLY - Manual status change (localhost testing tanpa Midtrans callback)
+const testChangeStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        // Validasi status yang diperbolehkan
+        const validStatuses = ['pending', 'paid', 'confirmed', 'completed', 'canceled'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({
+                message: `Status harus salah satu dari: ${validStatuses.join(', ')}`
+            });
+        }
+
+        const order = await Order.findById(id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order tidak ditemukan' });
+        }
+
+        const oldStatus = order.status;
+        order.status = status;
+        await order.save();
+
+        console.log(`[TESTING] Order ${id} status changed: ${oldStatus} → ${status}`);
+
+        res.json({
+            success: true,
+            message: `Status berhasil diubah dari '${oldStatus}' ke '${status}'`,
+            order: {
+                _id: order._id,
+                oldStatus,
+                newStatus: status
+            }
+        });
+    } catch (err) {
+        console.error('[TESTING] Change status error:', err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
 module.exports = {
     createOrder,
     createMultiDayOrder,
@@ -588,6 +674,8 @@ module.exports = {
     myOrders,
     approveOrder,
     rejectOrder,
+    markOrderReady,   // NEW: Mark order as ready
     completeOrder,
-    updateDeliveryStatus
+    updateDeliveryStatus,
+    testChangeStatus  // Export endpoint testing
 };

@@ -21,7 +21,7 @@ export default function LoginPage() {
             }
             const res = await api.post(`/users/auth/google`, { token });
             localStorage.setItem("token", res.data.token);
-            localStorage.setItem("userId", JSON.stringify(res.data.user.id));
+            localStorage.setItem("user", JSON.stringify(res.data.user));
             window.dispatchEvent(new Event("authStateChanged"));
             router.push("/");
         } catch (error) {
@@ -63,20 +63,6 @@ export default function LoginPage() {
                                 text="signin"
                             />
                         </div>
-
-
-                        <p className="text-xl self-center">
-                            Belum punya akun?{" "}
-                            <Link
-                                href="/register"
-                                className="text-[#E5713A]
-                        relative inline-block
-                        cursor-pointer
-                        after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-[#E5713A]
-                        after:transition-all after:duration-300 hover:after:w-full">
-                                Daftar di sini
-                            </Link>
-                        </p>
                     </div>
                     {/* IMAGE */}
                     <div className=" w-1/2 flex justify-center items-center">
