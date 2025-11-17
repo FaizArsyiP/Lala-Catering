@@ -118,11 +118,11 @@ const Page = () => {
     }, [filteredMenu, selectedHari]);
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-white">
             <Header />
 
             <div className="max-w-[1140px] mx-auto">
-                <div className="sticky top-0 z-10 py-2  mb-5 ease-in-out w-full bg-transparent ">
+                <div className="sticky top-10 z-10 py-2  mb-5 ease-in-out w-full bg-transparent ">
                     <div className="w-fit flex items-start gap-[10px]">
                         <div className="flex-1">
                             <Search
