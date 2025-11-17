@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 // Kita ambil tipe data dari hooks yang lu kasih
-import { type Order, type OrderItem, type Delivery } from "@/hooks/useOrders";
+import { type Order, type DeliveryItem, type Delivery } from "@/hooks/useOrders";
 import { IconUser, IconSearch, IconDish } from "@/components/icons";
 
 interface PesananListProps {
@@ -27,26 +27,22 @@ export default function PesananList({ orders, loading }: PesananListProps) {
         if (!normalizedQuery) return true;
         const q = normalizedQuery;
 
-        // Search in order basic info
+        // Basic info
         const matchesBasicInfo =
             o._id.toLowerCase().includes(q) ||
             o.userInfo.nama.toLowerCase().includes(q) ||
             o.status.toLowerCase().includes(q);
 
-        // Search in items (single-day orders)
-        const matchesItems = o.items && o.items.some((it: OrderItem) =>
-            it.namaItem.toLowerCase().includes(q)
+        // Search inside deliveries (both single & multi day)
+        const matchesDeliveries = o.deliveries?.some(
+            (delivery: Delivery) =>
+                delivery.hari.toLowerCase().includes(q) ||
+                delivery.items.some((it) =>
+                    it.namaItem.toLowerCase().includes(q)
+                )
         );
 
-        // Search in deliveries (multi-day orders)
-        const matchesDeliveries = o.deliveries && o.deliveries.some((delivery: Delivery) =>
-            delivery.hari.toLowerCase().includes(q) ||
-            delivery.items.some((it: OrderItem) =>
-                it.namaItem.toLowerCase().includes(q)
-            )
-        );
-
-        return matchesBasicInfo || matchesItems || matchesDeliveries;
+        return matchesBasicInfo || matchesDeliveries;
     });
 
     // pagination
@@ -110,22 +106,22 @@ export default function PesananList({ orders, loading }: PesananListProps) {
                     "Complete",
                     "Cancelled",
                 ].map((t) => {
-                        const active = t === activeFilter;
-                        return (
-                            <button
-                                key={t}
-                                onClick={() => {
-                                    setActiveFilter(t);
-                                    setCurrentPage(1);
-                                }}
-                                className={`px-3 py-1 rounded-full border text-sm ${
-                                    active
-                                        ? "bg-[#FCEDE8] border-[#F2B8A6] text-[#EF6C6C]"
+                    const active = t === activeFilter;
+                    return (
+                        <button
+                            key={t}
+                            onClick={() => {
+                                setActiveFilter(t);
+                                setCurrentPage(1);
+                            }}
+                            className={`px-3 py-1 rounded-full border text-sm ${
+                                active
+                                    ? "bg-[#FCEDE8] border-[#F2B8A6] text-[#EF6C6C]"
                                     : "border-[#F2B8A6] text-[#EF6C6C] cursor-pointer hover:bg-[#FCEDE8]"
-                                }`}>
-                                {t}
-                            </button>
-                        );
+                            }`}>
+                            {t}
+                        </button>
+                    );
                 })}
             </div>
 
@@ -162,14 +158,14 @@ export default function PesananList({ orders, loading }: PesananListProps) {
                     </div>
                 ) : (
                     paginatedOrders.map((o: Order) => (
-                    <article
+                        <article
                             key={o._id}
-                        className="bg-white shadow rounded-xl border border-slate-100">
-                        <header className="px-6 py-3 bg-[#c9c9c9] text-white rounded-t-lg flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
-                                    <IconUser />
-                                </div>
+                            className="bg-white shadow rounded-xl border border-slate-100">
+                            <header className="px-6 py-3 bg-[#c9c9c9] text-white rounded-t-lg flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                                        <IconUser />
+                                    </div>
                                     <div>
                                         <div className="text-sm text-[#0E3B7A] font-semibold">
                                             {o.userInfo?.nama}
@@ -190,77 +186,100 @@ export default function PesananList({ orders, loading }: PesananListProps) {
                                     {o.deliveries && o.deliveries.length > 0 ? (
                                         // Multi-day order: flatten all items with day prefix
                                         <>
-                                            {o.deliveries.map((delivery: Delivery, deliveryIdx: number) =>
-                                                delivery.items.map((it: OrderItem, itemIdx: number) => (
-                                                    <div
-                                                        key={`${deliveryIdx}-${itemIdx}`}
-                                                        className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 py-3 border-b border-slate-100 text-[#0E3B7A]">
-                                                        <div className="col-span-1 flex items-center justify-start">
-                                                            <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center">
-                                                                <IconDish />
+                                            {o.deliveries.map(
+                                                (
+                                                    delivery: Delivery,
+                                                    deliveryIdx: number
+                                                ) =>
+                                                    delivery.items.map(
+                                                        (
+                                                            it: DeliveryItem,
+                                                            itemIdx: number
+                                                        ) => (
+                                                            <div
+                                                                key={`${deliveryIdx}-${itemIdx}`}
+                                                                className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 py-3 border-b border-slate-100 text-[#0E3B7A]">
+                                                                <div className="col-span-1 flex items-center justify-start">
+                                                                    <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center">
+                                                                        <IconDish />
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="col-span-1 sm:col-span-6">
+                                                                    <div className="text-sm font-medium">
+                                                                        {
+                                                                            delivery.hari
+                                                                        }{" "}
+                                                                        -{" "}
+                                                                        {
+                                                                            it.namaItem
+                                                                        }
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="col-span-1 sm:col-span-1 text-center text-sm">
+                                                                    x{it.jumlah}
+                                                                </div>
+
+                                                                <div className="col-span-1 sm:col-span-2 text-right text-sm">
+                                                                    Rp{" "}
+                                                                    {it.harga.toLocaleString()}
+                                                                </div>
+
+                                                                <div className="col-span-1 sm:col-span-1 text-center text-sm hidden sm:block">
+                                                                    {
+                                                                        delivery.statusDelivery
+                                                                    }
+                                                                </div>
+
+                                                                <div className="col-span-1 sm:col-span-1 text-right text-sm">
+                                                                    {
+                                                                        o.metodePengambilan
+                                                                    }
+                                                                </div>
                                                             </div>
-                                                        </div>
-
-                                                        <div className="col-span-1 sm:col-span-6">
-                                                            <div className="text-sm font-medium">
-                                                                {delivery.hari} - {it.namaItem}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="col-span-1 sm:col-span-1 text-center text-sm">
-                                                            x{it.jumlah}
-                                                        </div>
-
-                                                        <div className="col-span-1 sm:col-span-2 text-right text-sm">
-                                                            Rp {it.harga.toLocaleString()}
-                                                        </div>
-
-                                                        <div className="col-span-1 sm:col-span-1 text-center text-sm hidden sm:block">
-                                                            {delivery.statusDelivery}
-                                                        </div>
-
-                                                        <div className="col-span-1 sm:col-span-1 text-right text-sm">
-                                                            {o.metodePengambilan}
-                                                        </div>
-                                                    </div>
-                                                ))
+                                                        )
+                                                    )
                                             )}
                                         </>
                                     ) : (
                                         // Single-day order: show items directly
-                                        o.items.map((it: OrderItem, idx: number) => (
-                                            <div
-                                                key={idx}
-                                                className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 py-3 border-b border-slate-100 text-[#0E3B7A]">
-                                                <div className="col-span-1 flex items-center justify-start">
-                                                    <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center">
-                                                        <IconDish />
+                                        o.deliveries[0].items.map(
+                                            (it: DeliveryItem, idx: number) => (
+                                                <div
+                                                    key={idx}
+                                                    className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 py-3 border-b border-slate-100 text-[#0E3B7A]">
+                                                    <div className="col-span-1 flex items-center justify-start">
+                                                        <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center">
+                                                            <IconDish />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-span-1 sm:col-span-6">
+                                                        <div className="text-sm font-medium">
+                                                            {it.namaItem}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-span-1 sm:col-span-1 text-center text-sm">
+                                                        x{it.jumlah}
+                                                    </div>
+
+                                                    <div className="col-span-1 sm:col-span-2 text-right text-sm">
+                                                        Rp{" "}
+                                                        {it.harga.toLocaleString()}
+                                                    </div>
+
+                                                    <div className="col-span-1 sm:col-span-1 text-center text-sm hidden sm:block">
+                                                        {o.status}
+                                                    </div>
+
+                                                    <div className="col-span-1 sm:col-span-1 text-right text-sm">
+                                                        {o.metodePengambilan}
                                                     </div>
                                                 </div>
-
-                                                <div className="col-span-1 sm:col-span-6">
-                                                    <div className="text-sm font-medium">
-                                                        {it.namaItem}
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-span-1 sm:col-span-1 text-center text-sm">
-                                                    x{it.jumlah}
-                                                </div>
-
-                                                <div className="col-span-1 sm:col-span-2 text-right text-sm">
-                                                    Rp {it.harga.toLocaleString()}
-                                                </div>
-
-                                                <div className="col-span-1 sm:col-span-1 text-center text-sm hidden sm:block">
-                                                    {o.status}
-                                                </div>
-
-                                                <div className="col-span-1 sm:col-span-1 text-right text-sm">
-                                                    {o.metodePengambilan}
-                                                </div>
-                                            </div>
-                                        ))
+                                            )
+                                        )
                                     )}
 
                                     <div className="flex items-center justify-end gap-3 mt-2">
@@ -276,7 +295,7 @@ export default function PesananList({ orders, loading }: PesananListProps) {
                         </article>
                     ))
                 )}
-                                </div>
+            </div>
 
             {/* PAGINATION */}
             <div className="mt-8 flex items-center justify-center gap-3 text-sm text-slate-700">
@@ -294,8 +313,7 @@ export default function PesananList({ orders, loading }: PesananListProps) {
                     {(() => {
                         const pages: (number | string)[] = [];
                         if (totalPages <= 7) {
-                            for (let i = 1; i <= totalPages; i++)
-                                pages.push(i);
+                            for (let i = 1; i <= totalPages; i++) pages.push(i);
                         } else {
                             if (currentPage <= 4) {
                                 pages.push(1, 2, 3, 4, 5, "...", totalPages);
@@ -347,10 +365,12 @@ export default function PesananList({ orders, loading }: PesananListProps) {
                             );
                         });
                     })()}
-                                </div>
+                </div>
 
                 <button
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
                     className="px-2 py-1 rounded border hover:bg-slate-100"
                     aria-label="next page"
                     disabled={currentPage === totalPages}>
