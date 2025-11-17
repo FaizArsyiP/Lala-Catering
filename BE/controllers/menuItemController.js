@@ -21,14 +21,14 @@ const getMenuItems = async (req, res) => {
 
 const createMenuItem = async (req, res) => {
     try {
-        const { nama, deskripsi, harga, stok } = req.body;
+        const { nama, deskripsi, harga, stok, jadwal } = req.body;
         let imageUrl = null;
         const filePath = req.file ? req.file.path : null;
         if (filePath) {
             const result = await cloudinary.uploader.upload(filePath);
             imageUrl = result.secure_url;
         }
-        const newItem = new MenuItem({ nama, deskripsi, harga, imageUrl, stok });
+        const newItem = new MenuItem({ nama, deskripsi, harga, imageUrl, stok, jadwal });
         await newItem.save();
         res.status(201).json(newItem);
     } catch (err) {

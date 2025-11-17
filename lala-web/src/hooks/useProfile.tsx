@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "axios";
+import api from "@/utils/axiosInstance";
 import { useEffect, useState } from "react";
 
 export type UserProfile = {
@@ -19,12 +19,11 @@ export function useProfile() {
 
         if (!token) return;
 
-        axios
-            .get(`${process.env.NEXT_PUBLIC_API_URL}/users/profile`, {
-                headers: {
-                    "x-auth-token": token,
-                },
-            })
+        api.get(`/users/profile`, {
+            headers: {
+                "x-auth-token": token,
+            },
+        })
             .then((response) => {
                 setProfile(response.data);
             })

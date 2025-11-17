@@ -23,7 +23,7 @@ const DropdownFilter = ({ name, options, value, onSelect }) => {
         className="w-full h-[60px] px-5 bg-white border-2 border-[#E5713A] rounded-[20px] gap-5 flex justify-between items-center"
       >
         <span className="text-[20px] text-[#E5713A] font-semibold">
-          {value ?? name}
+          {value ? value.charAt(0).toUpperCase() + value.slice(1) : name}
         </span>
 
         <IoChevronDown
