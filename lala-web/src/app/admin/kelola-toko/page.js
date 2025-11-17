@@ -6,6 +6,7 @@ import Search from '@/components/search';
 import DropdownFilter from '@/components/dropdownFilter';
 import MenuActionButtons from '@/components/admin/menuActionButtons';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
+import { useRouter } from 'next/navigation';
 
 // --- MOCK DATA ---
 const generateMockData = () => {
@@ -46,19 +47,18 @@ const KelolaTokoPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     
     // --- HANDLER AKSI TABEL ---
+    const router = useRouter();
+
     const handleDetailClick = (id) => {
-        alert(`Lihat Detail Menu ID: ${id}`);
-        // Logika navigasi ke halaman detail menu
+        router.push(`/admin/kelola-toko/detail/${id}`);
     };
 
     const handleStatusChangeClick = (id) => {
-        alert(`Ubah Status Menu ID: ${id}`);
-        // Logika untuk menampilkan modal atau navigasi ubah status
+        router.push(`/admin/kelola-toko/edit/${id}`);
     };
 
     const handleTambahMenu = () => {
-        alert("Navigasi ke halaman tambah menu baru.");
-        // Logika navigasi untuk tambah menu
+        router.push('/admin/kelola-toko/new');
     };
 
     // --- FILTER & SEARCH LOGIC ---
