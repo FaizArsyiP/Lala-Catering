@@ -117,9 +117,8 @@ const KonfirmasiPesananPage = () => {
                     alert("Pembayaran gagal! Silakan coba lagi.");
                 },
                 onClose: function () {
-                    alert(
-                        "Popup ditutup. Anda bisa melanjutkan pembayaran dari My Orders."
-                    );
+                    alert("Popup ditutup. Anda bisa melanjutkan pembayaran dari My Orders.");
+                    router.push("/profile");
                 },
             });
         } catch (err) {
