@@ -4,17 +4,231 @@ import { useState, useEffect } from "react";
 // Kita ambil tipe data dari hooks yang lu kasih
 import { type Order, type DeliveryItem, type Delivery } from "@/hooks/useOrders";
 import { IconUser, IconSearch, IconDish } from "@/components/icons";
+import api from "@/utils/axiosInstance";
+
+// TypeScript declaration for Midtrans Snap
+declare global {
+    interface Window {
+        snap: any;
+    }
+}
 
 interface PesananListProps {
     orders: Order[];
     loading: boolean;
+    isAdmin?: boolean; // Flag untuk admin/seller view
 }
 
-export default function PesananList({ orders, loading }: PesananListProps) {
+export default function PesananList({ orders, loading, isAdmin = false }: PesananListProps) {
     const [query, setQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState("All");
     const [itemsPerPage, setItemsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
+    const [processingOrderId, setProcessingOrderId] = useState<string | null>(null);
+
+    // Handler: Bayar sekarang dengan Midtrans (pending → paid)
+    const handlePayNow = async (orderId: string) => {
+        try {
+            setProcessingOrderId(orderId);
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Sesi Anda telah berakhir. Silakan login kembali.");
+                setProcessingOrderId(null);
+                return;
+            }
+
+            // Get payment token from Midtrans
+            const checkoutResponse = await api.post(
+                `/orders/${orderId}/checkout`,
+                {},
+                { headers: { "x-auth-token": token } }
+            );
+
+            const snapToken = checkoutResponse.data.token;
+
+            // Check if Midtrans Snap is loaded
+            if (!window.snap) {
+                alert("Sistem pembayaran sedang dimuat. Mohon refresh halaman dan coba lagi.");
+                setProcessingOrderId(null);
+                return;
+            }
+
+            // Function untuk update status ke 'paid' (karena callback gak bisa masuk di localhost)
+            const updateStatusToPaid = async () => {
+                try {
+                    await api.post(
+                        `/orders/${orderId}/test-status`,
+                        { status: "paid" },
+                        { headers: { "x-auth-token": token } }
+                    );
+                    console.log("Status updated to paid");
+                } catch (err) {
+                    console.error("Failed to update status:", err);
+                }
+            };
+
+            // Show Midtrans popup
+            window.snap.pay(snapToken, {
+                onSuccess: async function (result) {
+                    console.log("Payment success:", result);
+                    alert("Pembayaran berhasil!");
+                    // Update status karena callback tidak bisa masuk di localhost
+                    await updateStatusToPaid();
+                    window.location.reload();
+                },
+                onPending: async function (result) {
+                    console.log("Payment pending:", result);
+                    alert("Menunggu pembayaran...");
+                    // Update status karena callback tidak bisa masuk di localhost
+                    await updateStatusToPaid();
+                    window.location.reload();
+                },
+                onError: function (result) {
+                    console.error("Payment error:", result);
+                    alert("Pembayaran gagal! Silakan coba lagi.");
+                    setProcessingOrderId(null);
+                },
+                onClose: function () {
+                    console.log("Payment popup closed");
+                    setProcessingOrderId(null);
+                },
+            });
+        } catch (err: any) {
+            console.error("Payment error:", err);
+            alert(err.response?.data?.message || "Terjadi kesalahan saat memproses pembayaran");
+            setProcessingOrderId(null);
+        }
+    };
+
+    // Handler: Mark ready (confirmed → ready) - ADMIN ONLY
+    const handleMarkReady = async (orderId: string) => {
+        if (!confirm("Tandai pesanan ini sebagai siap diambil/dikirim?")) {
+            return;
+        }
+
+        try {
+            setProcessingOrderId(orderId);
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Sesi Anda telah berakhir. Silakan login kembali.");
+                return;
+            }
+
+            // Call endpoint ready
+            await api.post(
+                `/orders/${orderId}/ready`,
+                {},
+                { headers: { "x-auth-token": token } }
+            );
+
+            alert("Pesanan berhasil ditandai ready!");
+            window.location.reload();
+        } catch (err: any) {
+            console.error("Mark ready error:", err);
+            alert(err.response?.data?.message || "Terjadi kesalahan");
+        } finally {
+            setProcessingOrderId(null);
+        }
+    };
+
+    // Handler: Tandai selesai (ready → completed)
+    const handleMarkComplete = async (orderId: string) => {
+        if (!confirm("Konfirmasi pesanan sudah diterima?")) {
+            return;
+        }
+
+        try {
+            setProcessingOrderId(orderId);
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Sesi Anda telah berakhir. Silakan login kembali.");
+                return;
+            }
+
+            // Call endpoint complete
+            await api.post(
+                `/orders/${orderId}/complete`,
+                {},
+                { headers: { "x-auth-token": token } }
+            );
+
+            alert("Pesanan berhasil ditandai selesai!");
+            window.location.reload();
+        } catch (err: any) {
+            console.error("Complete order error:", err);
+            alert(err.response?.data?.message || "Terjadi kesalahan");
+        } finally {
+            setProcessingOrderId(null);
+        }
+    };
+
+    // Handler: Accept order (paid → confirmed) - ADMIN ONLY
+    const handleAcceptOrder = async (orderId: string) => {
+        if (!confirm("Terima pesanan ini?")) {
+            return;
+        }
+
+        try {
+            setProcessingOrderId(orderId);
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Sesi Anda telah berakhir. Silakan login kembali.");
+                return;
+            }
+
+            // Call endpoint approve
+            await api.post(
+                `/orders/${orderId}/approve`,
+                {},
+                { headers: { "x-auth-token": token } }
+            );
+
+            alert("Pesanan berhasil diterima!");
+            window.location.reload();
+        } catch (err: any) {
+            console.error("Approve order error:", err);
+            alert(err.response?.data?.message || "Terjadi kesalahan");
+        } finally {
+            setProcessingOrderId(null);
+        }
+    };
+
+    // Handler: Reject order (paid → canceled + refund) - ADMIN ONLY
+    const handleRejectOrder = async (orderId: string) => {
+        const reason = prompt("Alasan penolakan pesanan:");
+        if (!reason) {
+            return;
+        }
+
+        try {
+            setProcessingOrderId(orderId);
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Sesi Anda telah berakhir. Silakan login kembali.");
+                return;
+            }
+
+            // Call endpoint reject
+            await api.post(
+                `/orders/${orderId}/reject`,
+                { reason },
+                { headers: { "x-auth-token": token } }
+            );
+
+            alert("Pesanan ditolak dan refund akan diproses.");
+            window.location.reload();
+        } catch (err: any) {
+            console.error("Reject order error:", err);
+            alert(err.response?.data?.message || "Terjadi kesalahan");
+        } finally {
+            setProcessingOrderId(null);
+        }
+    };
 
     // filterr
     const normalizedQuery = query.trim().toLowerCase();
@@ -103,6 +317,7 @@ export default function PesananList({ orders, loading }: PesananListProps) {
                     "Pending",
                     "Paid",
                     "Confirmed",
+                    "Ready",
                     "Complete",
                     "Cancelled",
                 ].map((t) => {
@@ -283,12 +498,78 @@ export default function PesananList({ orders, loading }: PesananListProps) {
                                     )}
 
                                     <div className="flex items-center justify-end gap-3 mt-2">
-                                        <button className="px-3 py-1 border rounded text-sm cursor-pointer">
+                                        <button className="px-3 py-1 border rounded text-sm cursor-pointer hover:bg-gray-50">
                                             Lihat detail
                                         </button>
-                                        <button className="px-3 py-1 bg-[#EF6C6C] text-white rounded text-sm cursor-pointer">
-                                            Aksi
-                                        </button>
+
+                                        {/* CUSTOMER VIEW - Tombol untuk pembeli */}
+                                        {!isAdmin && (
+                                            <>
+                                                {/* Tombol Bayar Sekarang - untuk status pending */}
+                                                {o.status.toLowerCase() === 'pending' && (
+                                                    <button
+                                                        onClick={() => handlePayNow(o._id)}
+                                                        disabled={processingOrderId === o._id}
+                                                        className="px-3 py-1 bg-[#EF6C6C] text-white rounded text-sm cursor-pointer hover:bg-[#d65555] disabled:opacity-50 disabled:cursor-not-allowed">
+                                                        {processingOrderId === o._id ? 'Memproses...' : 'Bayar Sekarang'}
+                                                    </button>
+                                                )}
+
+                                                {/* Tombol Tandai Selesai - untuk status ready */}
+                                                {o.status.toLowerCase() === 'ready' && (
+                                                    <button
+                                                        onClick={() => handleMarkComplete(o._id)}
+                                                        disabled={processingOrderId === o._id}
+                                                        className="px-3 py-1 bg-green-600 text-white rounded text-sm cursor-pointer hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                        {processingOrderId === o._id ? 'Memproses...' : 'Konfirmasi Terima'}
+                                                    </button>
+                                                )}
+                                            </>
+                                        )}
+
+                                        {/* ADMIN VIEW - Tombol untuk seller/admin */}
+                                        {isAdmin && (
+                                            <>
+                                                {/* Tombol Accept & Reject - untuk status paid */}
+                                                {o.status.toLowerCase() === 'paid' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleAcceptOrder(o._id)}
+                                                            disabled={processingOrderId === o._id}
+                                                            className="px-3 py-1 bg-green-600 text-white rounded text-sm cursor-pointer hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                            {processingOrderId === o._id ? 'Memproses...' : 'Accept'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleRejectOrder(o._id)}
+                                                            disabled={processingOrderId === o._id}
+                                                            className="px-3 py-1 bg-red-600 text-white rounded text-sm cursor-pointer hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                            {processingOrderId === o._id ? 'Memproses...' : 'Reject'}
+                                                        </button>
+                                                    </>
+                                                )}
+
+                                                {/* Tombol Mark Ready - untuk status confirmed */}
+                                                {o.status.toLowerCase() === 'confirmed' && (
+                                                    <button
+                                                        onClick={() => handleMarkReady(o._id)}
+                                                        disabled={processingOrderId === o._id}
+                                                        className="px-4 py-2 bg-[#E07856] text-white rounded-lg text-sm font-medium cursor-pointer hover:bg-[#d16a45] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                                        <svg
+                                                            width="20"
+                                                            height="20"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2.5"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round">
+                                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                                        </svg>
+                                                        {processingOrderId === o._id ? 'Memproses...' : 'Ready'}
+                                                    </button>
+                                                )}
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
