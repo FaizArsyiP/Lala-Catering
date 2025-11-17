@@ -65,10 +65,22 @@
                         <span className="text-[#002683] text-[16px]">x{value}</span>
                     );
 
+<<<<<<< Updated upstream
                 case "badge":
                     return (
                         <span
                             className={`inline-block px-3 py-1 rounded-full text-sm font-semibold
+=======
+            case "quantity":
+                return (
+                    <span className="text-[#002683] text-[14px]">x{value}</span>
+                );
+
+            case "badge":
+                return (
+                    <span
+                        className={`inline-block px-3 py-1 rounded-full text-sm font-semibold
+>>>>>>> Stashed changes
                             ${
                                 value === "Aktif"
                                     ? "bg-green-100 text-green-700"

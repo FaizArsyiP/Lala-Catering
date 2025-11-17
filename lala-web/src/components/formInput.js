@@ -3,6 +3,7 @@ import { IoChevronDown } from "react-icons/io5";
 
 const FormInput = ({ 
     label, 
+    name,
     value, 
     onChange, 
     editable = true, 
@@ -23,6 +24,7 @@ const FormInput = ({
                     // DROPDOWN SELECT
                     <div className="relative w-full">
                         <select
+                            name={name}
                             value={value}
                             onChange={onChange}
                             className="w-full px-4 py-3 border-2 border-[#9D9D9D] rounded-[20px] 
@@ -44,6 +46,7 @@ const FormInput = ({
                 ) : (
                     // INPUT BIASA
                     <input
+                        name={name}
                         type={type}
                         value={value}
                         onChange={onChange}
