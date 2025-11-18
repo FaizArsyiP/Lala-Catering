@@ -70,21 +70,21 @@ export default function PesananList({ orders, loading, isAdmin = false }: Pesana
 
             // Show Midtrans popup
             window.snap.pay(snapToken, {
-                onSuccess: async function (result) {
+                onSuccess: async function (result: any) {
                     console.log("Payment success:", result);
                     alert("Pembayaran berhasil!");
                     // Update status karena callback tidak bisa masuk di localhost
                     await updateStatusToPaid();
                     window.location.reload();
                 },
-                onPending: async function (result) {
+                onPending: async function (result: any) {
                     console.log("Payment pending:", result);
                     alert("Menunggu pembayaran...");
                     // Update status karena callback tidak bisa masuk di localhost
                     await updateStatusToPaid();
                     window.location.reload();
                 },
-                onError: function (result) {
+                onError: function (result: any) {
                     console.error("Payment error:", result);
                     alert("Pembayaran gagal! Silakan coba lagi.");
                     setProcessingOrderId(null);
