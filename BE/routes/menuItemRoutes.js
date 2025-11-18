@@ -12,12 +12,12 @@ router.get('/:id', getMenuItemById);                // GET /api/menu/:id
 // field form-data: nama, deskripsi, harga, stok, gambar (type file)
 router.post(                                        // POST /api/menu
   '/',
-  authMiddleware(['penjual']),
   upload.single('gambar'),
+  authMiddleware(['penjual']),
   createMenuItem
 );
 
-router.put('/:id', authMiddleware(['penjual']), upload.single('gambar'), updateMenuItem);   // PUT /api/menu/:id
+router.put('/:id', upload.single('gambar'), authMiddleware(['penjual']),  updateMenuItem);   // PUT /api/menu/:id
 router.delete('/:id', authMiddleware(['penjual']), deleteMenuItem);             // DELETE /api/menu/:id
 
 module.exports = router;

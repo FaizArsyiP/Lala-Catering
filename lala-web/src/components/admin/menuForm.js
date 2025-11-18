@@ -84,8 +84,8 @@ const MenuForm = ({
                                     <>
                                         <input
                                             type="file"
-                                            name="image"
-                                            accept="image/*"
+                                            name="gambar"
+                                            accept="gambar/*"
                                             onChange={handleImageChange}
                                             className="w-full file:mr-4 file:py-2 file:px-4 
                                                     file:rounded-xl file:border-2 file:border-[#D9D9D9]
