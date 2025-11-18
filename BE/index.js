@@ -7,8 +7,9 @@ dotenv.config();
 const userRoutes = require("./routes/userRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const menuRoutes = require("./routes/menuItemRoutes");
-// const notificationRoutes = require("./routes/notificationRoutes");
 const jadwalRoutes = require("./routes/jadwalRoutes");
+const storeRoutes = require("./routes/storeRoutes");
+// const notificationRoutes = require("./routes/notificationRoutes");
 // const faqRoutes = require("./routes/faqRoutes");
 
 const app = express();
@@ -45,6 +46,12 @@ app.use(
 );
 app.use(express.json());
 
+// Request logging middleware for debugging
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`);
+    next();
+});
+
 // Koneksi ke MongoDB Atlas
 mongoose
     .connect(process.env.MONGO_URI)
@@ -73,6 +80,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/menu", menuRoutes);
 app.use("/api/jadwal", jadwalRoutes);
+app.use("/api/store", storeRoutes);
+console.log('✅ All routes registered successfully');
 //app.use("/api/faq", faqRoutes);
 
 const PORT = process.env.PORT || 8080;

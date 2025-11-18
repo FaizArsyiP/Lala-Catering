@@ -50,6 +50,10 @@ const KelolaTokoPage = () => {
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
 
+    // Store status state
+    const [isStoreOpen, setIsStoreOpen] = useState(true);
+    const [isStoreLoading, setIsStoreLoading] = useState(false);
+
     // --- HANDLER AKSI TABEL ---
     const router = useRouter();
 
@@ -83,6 +87,67 @@ const KelolaTokoPage = () => {
 
         fetchMenuData();
     }, []);
+
+    // --- FETCH STORE STATUS ---
+    useEffect(() => {
+        const fetchStoreStatus = async () => {
+            try {
+                const response = await api.get('/store/status');
+                setIsStoreOpen(response.data.isOpen);
+            } catch (err) {
+                console.error('Error fetching store status:', err);
+            }
+        };
+
+        fetchStoreStatus();
+    }, []);
+
+    // --- HANDLER OPEN/CLOSE STORE ---
+    const handleOpenStore = async () => {
+        try {
+            setIsStoreLoading(true);
+            const token = localStorage.getItem('token');
+            const response = await api.post('/store/open', {}, {
+                headers: { 'x-auth-token': token }
+            });
+
+            if (response.data.success) {
+                setIsStoreOpen(true);
+                alert('✅ Toko berhasil dibuka!');
+            }
+        } catch (err) {
+            console.error('Error opening store:', err);
+            alert(err.response?.data?.message || 'Gagal membuka toko');
+        } finally {
+            setIsStoreLoading(false);
+        }
+    };
+
+    const handleCloseStore = async () => {
+        const reason = prompt('Masukkan alasan penutupan toko (opsional):');
+
+        // User clicked cancel
+        if (reason === null) return;
+
+        try {
+            setIsStoreLoading(true);
+            const token = localStorage.getItem('token');
+            const response = await api.post('/store/close',
+                { reason: reason || 'Toko sedang tutup sementara' },
+                { headers: { 'x-auth-token': token } }
+            );
+
+            if (response.data.success) {
+                setIsStoreOpen(false);
+                alert('✅ Toko berhasil ditutup!');
+            }
+        } catch (err) {
+            console.error('Error closing store:', err);
+            alert(err.response?.data?.message || 'Gagal menutup toko');
+        } finally {
+            setIsStoreLoading(false);
+        }
+    };
 
     const handleDetailClick = (id) => {
         router.push(`/admin/kelola-toko/detail/${id}`);
@@ -301,17 +366,40 @@ const KelolaTokoPage = () => {
         <div className='w-full mx-auto max-w-[1140px]'>
             {/* Header dan Tombol Aksi */}
             <div className="flex justify-between items-center mb-10">
-                <h1 className="text-[40px] font-semibold text-[#E5713A]">Kelola Toko</h1>
+                <div>
+                    <h1 className="text-[40px] font-semibold text-[#E5713A]">Kelola Toko</h1>
+                    <p className="text-[16px] text-[#5B5B5B] mt-1">
+                        Status: <span className={`font-semibold ${isStoreOpen ? 'text-green-600' : 'text-red-600'}`}>
+                            {isStoreOpen ? '🟢 Toko Buka' : '🔴 Toko Tutup'}
+                        </span>
+                    </p>
+                </div>
                 <div className="flex">
                     <button
-                        className="flex items-center justify-center w-[120px] h-[45px] text-[18px] font-semibold text-white bg-[#E5713A] rounded-tl-[10px] rounded-bl-[10px] hover:bg-[#d65535] transition duration-150"
+                        onClick={handleOpenStore}
+                        disabled={isStoreLoading || isStoreOpen}
+                        className={`flex items-center justify-center w-[120px] h-[45px] text-[18px] font-semibold rounded-tl-[10px] rounded-bl-[10px] transition duration-150
+                            ${isStoreOpen
+                                ? 'text-white bg-[#E5713A] cursor-default'
+                                : 'text-white bg-[#9D9D9D] hover:bg-[#E5713A] cursor-pointer'
+                            }
+                            ${isStoreLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                        `}
                     >
-                        Buka Toko
+                        {isStoreLoading && !isStoreOpen ? 'Loading...' : 'Buka Toko'}
                     </button>
                     <button
-                        className="flex items-center justify-center w-[120px] h-[45px] text-[18px] font-semibold text-[#E5713A] border-2 border-[#E5713A] bg-white rounded-tr-[10px] rounded-br-[10px] hover:bg-[#F8F4F2] transition duration-150"
+                        onClick={handleCloseStore}
+                        disabled={isStoreLoading || !isStoreOpen}
+                        className={`flex items-center justify-center w-[120px] h-[45px] text-[18px] font-semibold rounded-tr-[10px] rounded-br-[10px] transition duration-150
+                            ${!isStoreOpen
+                                ? 'text-white bg-red-500 cursor-default'
+                                : 'text-[#E5713A] border-2 border-[#E5713A] bg-white hover:bg-[#F8F4F2] cursor-pointer'
+                            }
+                            ${isStoreLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                        `}
                     >
-                        Tutup Toko
+                        {isStoreLoading && isStoreOpen ? 'Loading...' : 'Tutup Toko'}
                     </button>
                 </div>
             </div>

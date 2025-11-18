@@ -35,6 +35,8 @@ const Page = () => {
     const [menuList, setMenuList] = useState<MenuItem[]>([]);
     const [selectedHari, setSelectedHari] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isStoreOpen, setIsStoreOpen] = useState(true);
+    const [storeClosedReason, setStoreClosedReason] = useState("");
 
     const hariList = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
@@ -80,6 +82,23 @@ const Page = () => {
     }, []);
 
     // ==========================
+    // 🔥 FETCH STORE STATUS
+    // ==========================
+    useEffect(() => {
+        const fetchStoreStatus = async () => {
+            try {
+                const res = await api.get(`/store/status`);
+                setIsStoreOpen(res.data.isOpen);
+                setStoreClosedReason(res.data.closedReason || "Toko sedang tutup sementara");
+            } catch (error) {
+                console.error("Gagal fetch store status:", error);
+            }
+        };
+
+        fetchStoreStatus();
+    }, []);
+
+    // ==========================
     // FILTER SEARCH + FILTER HARI
     // ==========================
     const filteredMenu = useMemo(() => {
@@ -120,6 +139,15 @@ const Page = () => {
     return (
         <div className="min-h-screen bg-white">
             <Header />
+
+            {/* Store Closed Banner */}
+            {!isStoreOpen && (
+                <div className="bg-red-500 text-white py-4 px-6 text-center">
+                    <p className="text-[20px] font-bold">🔴 Toko Sedang Tutup</p>
+                    <p className="text-[16px] mt-1">{storeClosedReason}</p>
+                    <p className="text-[14px] mt-2 opacity-90">Pesanan tidak dapat dilakukan saat ini. Silakan kembali lagi nanti.</p>
+                </div>
+            )}
 
             <div className="max-w-[1140px] mx-auto">
                 <div className="top-10 z-10 py-2  mb-5 ease-in-out w-full bg-transparent ">
@@ -175,6 +203,7 @@ const Page = () => {
                                         description={menu.description}
                                         price={menu.price}
                                         day={group.day}
+                                        isStoreOpen={isStoreOpen}
                                     />
                                 ))}
                             </div>

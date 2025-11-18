@@ -11,7 +11,8 @@ const CardMenu = ({
     description,
     price,
     initialQuantity = 0,
-    day 
+    day,
+    isStoreOpen = true  // Default true untuk backward compatibility
 }) => {
 
     const { addToCart, updateQuantity, cart } = useCart();
@@ -67,13 +68,17 @@ const CardMenu = ({
         <div className='flex justify-between items-center mx-4 mb-4 mt-auto'>
             <span className='text-[16px] font-semibold text-[#E5713A]'>{formatPrice(price)}</span>
 
-            {quantity === 0 ? (
+            {!isStoreOpen ? (
+                <div className='h-10 px-3 bg-gray-200 rounded-[10px] flex items-center justify-center'>
+                    <span className='text-[14px] font-semibold text-gray-500'>Tutup</span>
+                </div>
+            ) : quantity === 0 ? (
                 <button onClick={handleAdd}
                         className='h-10 w-30 bg-white rounded-[10px]  border-2 border-[#E5713A] text-[#E5713A] text-[16px] font-semibold transition-colors duration-200 hover:bg-[#FFE8D6]'>
                     Add
                 </button>
             ) : (
-                <div className='flex h-10 w-30 items-center border-2 border-[#E5713A] rounded-[10px] overflow-hidden'> 
+                <div className='flex h-10 w-30 items-center border-2 border-[#E5713A] rounded-[10px] overflow-hidden'>
                     <button onClick={handleDecrement}
                             className='w-10 h-full flex items-center justify-center bg-white text-[#E5713A] text-[18px] font-bold border-r-2 border-[#E5713A] transition-colors duration-200 hover:bg-[#FFE8D6]'>
                         -

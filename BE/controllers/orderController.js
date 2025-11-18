@@ -19,6 +19,18 @@ const coreApi = new midtransClient.CoreApi({
 // OLD: Single-day order (Legacy support - deprecated)
 const createOrder = async (req, res) => {
     try {
+        // CHECK STORE STATUS FIRST
+        const StoreSettings = require('../models/StoreSettings');
+        const storeSettings = await StoreSettings.getSettings();
+
+        if (!storeSettings.isOpen) {
+            return res.status(403).json({
+                message: 'Toko sedang tutup. Pesanan tidak dapat diproses saat ini.',
+                reason: storeSettings.closedReason || 'Toko sedang tutup sementara',
+                isOpen: false
+            });
+        }
+
         const { items, lokasiPengiriman, metodePengambilan } = req.body;
         const user = await User.findById(req.user.id);
 
@@ -73,6 +85,18 @@ const createOrder = async (req, res) => {
 // NEW: Multi-day order (Simplified - tanpa weekly schedule)
 const createMultiDayOrder = async (req, res) => {
     try {
+        // CHECK STORE STATUS FIRST
+        const StoreSettings = require('../models/StoreSettings');
+        const storeSettings = await StoreSettings.getSettings();
+
+        if (!storeSettings.isOpen) {
+            return res.status(403).json({
+                message: 'Toko sedang tutup. Pesanan tidak dapat diproses saat ini.',
+                reason: storeSettings.closedReason || 'Toko sedang tutup sementara',
+                isOpen: false
+            });
+        }
+
         const { deliveries, lokasiPengiriman, metodePengambilan } = req.body;
         const user = await User.findById(req.user.id);
 
@@ -562,36 +586,36 @@ const rejectOrder = async (req, res) => {
             return res.status(400).json({ message: 'Hanya pesanan dengan status "paid" yang dapat ditolak.' });
         }
 
-        // ⚠️ LOCALHOST MODE: Skip Midtrans refund API (hanya notifikasi)
-        // Untuk production, uncomment code di bawah untuk actual refund via Midtrans
+        // ⚠️ REFUND HANDLING
+        // NOTE: Midtrans Sandbox mode TIDAK support automatic refund via API
+        // Untuk actual refund, harus upgrade ke Production mode atau proses manual via Midtrans Dashboard
 
-        /* PRODUCTION MODE - Uncomment untuk actual Midtrans refund:
         if (order.midtransTransactionId) {
-            try {
-                const refundParams = {
-                    refund_key: `refund-${order._id}-${Date.now()}`,
-                    amount: order.totalHarga,
-                    reason: reason || 'Pesanan ditolak oleh penjual - kapasitas tidak mencukupi'
-                };
+            if (process.env.MIDTRANS_IS_PRODUCTION === 'true') {
+                // PRODUCTION MODE: Attempt automatic refund via Midtrans API
+                try {
+                    const refundParams = {
+                        refund_key: `refund-${order._id}-${Date.now()}`,
+                        amount: order.totalHarga,
+                        reason: reason || 'Pesanan ditolak oleh penjual - kapasitas tidak mencukupi'
+                    };
 
-                await coreApi.refund(order.midtransTransactionId, refundParams);
-                console.log('Midtrans refund successful');
+                    await coreApi.refund(order.midtransTransactionId, refundParams);
+                    console.log('✅ Midtrans refund successful');
 
-            } catch (midtransErr) {
-                console.error('Midtrans refund error:', midtransErr);
-                return res.status(500).json({
-                    message: 'Gagal memproses refund ke Midtrans.',
-                    error: midtransErr.message
-                });
+                } catch (midtransErr) {
+                    console.error('❌ Midtrans refund error:', midtransErr);
+                    // Don't block order cancellation if refund fails
+                    // Admin can process manual refund via Midtrans Dashboard
+                    console.log('⚠️  Please process manual refund via Midtrans Dashboard');
+                }
+            } else {
+                // SANDBOX MODE: Log only (Sandbox tidak support refund API)
+                console.log(`📝 [SANDBOX] Refund notification for order ${order._id}`);
+                console.log(`💰 Amount: Rp ${order.totalHarga.toLocaleString('id-ID')}`);
+                console.log(`📄 Reason: ${reason || 'Kapasitas tidak mencukupi'}`);
+                console.log(`⚠️  Manual refund required via Midtrans Dashboard (Sandbox limitation)`);
             }
-        }
-        */
-
-        // LOCALHOST: Cukup log saja, tidak actual refund
-        if (order.midtransTransactionId) {
-            console.log(`[TESTING] Refund will be processed for order ${order._id}`);
-            console.log(`[TESTING] Amount: Rp ${order.totalHarga}`);
-            console.log(`[TESTING] Reason: ${reason || 'Kapasitas tidak mencukupi'}`);
         }
 
         // Update status to canceled
