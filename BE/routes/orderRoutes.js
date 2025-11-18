@@ -4,6 +4,7 @@ const {
     createOrder,
     createMultiDayOrder,
     getOrders,
+    getOrderById,
     checkout,
     handleMidtransCallback,
     myOrders,
@@ -20,8 +21,9 @@ const authMiddleware = require('../middleware/auth');
 // Customer routes
 router.post('/', authMiddleware(['pembeli']), createOrder);                            // POST /api/orders - Create single-day order (legacy)
 router.post('/multi-day', authMiddleware(['pembeli']), createMultiDayOrder);           // POST /api/orders/multi-day - Create multi-day order (NEW)
-router.get('/:id/invoice', authMiddleware(['pembeli', 'penjual']), generateInvoice);   // GET /api/orders/:id/invoice - Generate PDF invoice
 router.get('/myorders', authMiddleware(['pembeli']), myOrders);                        // GET /api/orders/myorders - Get my orders
+router.get('/:id/invoice', authMiddleware(['pembeli', 'penjual']), generateInvoice);   // GET /api/orders/:id/invoice - Generate PDF invoice
+router.get('/:id', authMiddleware(['pembeli', 'penjual']), getOrderById);              // GET /api/orders/:id - Get single order by ID
 router.post('/:id/checkout', authMiddleware(['pembeli']), checkout);                   // POST /api/orders/:id/checkout - Get payment token
 
 // Seller routes

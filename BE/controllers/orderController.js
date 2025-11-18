@@ -193,6 +193,21 @@ const getOrders = async (req, res) => {
     }
 };
 
+const getOrderById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const order = await Order.findById(id);
+
+        if (!order) {
+            return res.status(404).json({ message: 'Pesanan tidak ditemukan' });
+        }
+
+        res.json(order);
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
 // Mark order as ready (confirmed → ready) - Seller marks as ready for pickup/delivery
 const markOrderReady = async (req, res) => {
     try {
@@ -334,15 +349,13 @@ const handleMidtransCallback = async (req, res) => {
 const generateInvoice = async (req, res) => {
     try {
         const { id } = req.params;
-        const order = await Order.findById(id)
-            .populate('userId', 'nama email alamatPengiriman')
-            .populate('items.menuItemId', 'nama harga');
+        const order = await Order.findById(id);
 
         if (!order) {
             return res.status(404).json({ message: 'Pesanan tidak ditemukan.' });
         }
 
-        if (req.user.role !== 'penjual' && order.userId._id.toString() !== req.user.id) {
+        if (req.user.role !== 'penjual' && order.userId.toString() !== req.user.id) {
             return res.status(403).json({ message: 'Akses ditolak.' });
         }
 
@@ -363,9 +376,12 @@ const generateInvoice = async (req, res) => {
         y -= 10;
 
         draw(`Nomor Pesanan: ${order._id}`, 50);
-        draw(`Nama Pelanggan: ${order.userId.nama}`, 50);
-        draw(`Alamat Pengiriman: ${order.userId.alamatPengiriman}`, 50);
-        draw(`Tanggal Pesanan: ${new Date(order.tanggalPesanan).toLocaleDateString()}`, 50);
+        draw(`Nama Pelanggan: ${order.userInfo.nama}`, 50);
+        draw(`Email: ${order.userInfo.email}`, 50);
+        draw(`No Telepon: ${order.userInfo.nomorTelepon}`, 50);
+        draw(`Alamat: ${order.alamatPengirimanText || '-'}`, 50);
+        draw(`Metode: ${order.metodePengambilan}`, 50);
+        draw(`Tanggal Pesanan: ${new Date(order.createdAt || order.tanggalPesanan).toLocaleDateString('id-ID')}`, 50);
 
         y -= 20;
         draw("Rincian Pesanan:", 50, 16);
@@ -380,25 +396,50 @@ const generateInvoice = async (req, res) => {
 
         let grandTotal = 0;
 
-        // Table rows
-        order.items.forEach(item => {
-            const namaItem = item.namaItem || item.menuItemId?.nama;
-            const harga = item.harga || item.menuItemId?.harga;
-            const jumlah = item.jumlah;
+        // Check if multi-day order (has deliveries) or single-day order (has items)
+        if (order.deliveries && order.deliveries.length > 0) {
+            // Multi-day order - iterate through deliveries
+            order.deliveries.forEach(delivery => {
+                // Draw day header
+                page.drawText(`=== ${delivery.hari} ===`, { x: 50, y, size: 11, font });
+                y -= 18;
 
-            const total = harga * jumlah;
-            grandTotal += total;
+                delivery.items.forEach(item => {
+                    const namaItem = item.namaItem;
+                    const harga = item.harga;
+                    const jumlah = item.jumlah;
+                    const total = harga * jumlah;
+                    grandTotal += total;
 
-            page.drawText(`${namaItem}`, { x: 50, y, size: 12, font });
-            page.drawText(`Rp ${harga}`, { x: 250, y, size: 12, font });
-            page.drawText(`${jumlah}`, { x: 350, y, size: 12, font });
-            page.drawText(`Rp ${total}`, { x: 450, y, size: 12, font });
+                    page.drawText(`${namaItem}`, { x: 50, y, size: 10, font });
+                    page.drawText(`Rp ${harga.toLocaleString()}`, { x: 250, y, size: 10, font });
+                    page.drawText(`${jumlah}`, { x: 350, y, size: 10, font });
+                    page.drawText(`Rp ${total.toLocaleString()}`, { x: 450, y, size: 10, font });
 
-            y -= 20;
-        });
+                    y -= 18;
+                });
+            });
+        } else if (order.items && order.items.length > 0) {
+            // Single-day order - iterate through items
+            order.items.forEach(item => {
+                const namaItem = item.namaItem;
+                const harga = item.harga;
+                const jumlah = item.jumlah;
+                const total = harga * jumlah;
+                grandTotal += total;
+
+                page.drawText(`${namaItem}`, { x: 50, y, size: 10, font });
+                page.drawText(`Rp ${harga.toLocaleString()}`, { x: 250, y, size: 10, font });
+                page.drawText(`${jumlah}`, { x: 350, y, size: 10, font });
+                page.drawText(`Rp ${total.toLocaleString()}`, { x: 450, y, size: 10, font });
+
+                y -= 18;
+            });
+        }
 
         y -= 20;
-        draw(`TOTAL AKHIR: Rp ${grandTotal}`, 50, 14);
+        draw(`TOTAL AKHIR: Rp ${grandTotal.toLocaleString()}`, 50, 14);
+        draw(`Status: ${order.status.toUpperCase()}`, 50, 12);
 
         const pdfBytes = await pdfDoc.save();
         // --- END PDF ---
@@ -668,6 +709,7 @@ module.exports = {
     createOrder,
     createMultiDayOrder,
     getOrders,
+    getOrderById,
     checkout,
     handleMidtransCallback,
     generateInvoice,
