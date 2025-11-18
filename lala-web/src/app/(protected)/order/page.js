@@ -119,6 +119,7 @@ const KonfirmasiPesananPage = () => {
                 onClose: function () {
                     alert("Popup ditutup. Anda bisa melanjutkan pembayaran dari My Orders.");
                     router.push("/profile");
+                    clearCart();
                 },
             });
         } catch (err) {

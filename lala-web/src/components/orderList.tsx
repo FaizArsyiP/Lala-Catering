@@ -92,6 +92,7 @@ export default function PesananList({ orders, loading, isAdmin = false }: Pesana
                 onClose: function () {
                     console.log("Payment popup closed");
                     setProcessingOrderId(null);
+                    
                 },
             });
         } catch (err: any) {
