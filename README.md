@@ -152,7 +152,8 @@ Lala-Catering/
 
 ## 📎 Link Deploy Website
 
-🔗 [Link Deploy](https://lala-catering.vercel.app/)
+🔗 [Katering Bu Lala](https://lala-catering.vercel.app/)
+
 ---
 
 ## 📎 Link GDrive
