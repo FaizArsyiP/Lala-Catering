@@ -150,6 +150,11 @@ Lala-Catering/
 
 ---
 
+## 📎 Link Deploy Website
+
+🔗 [Link Deploy](https://lala-catering.vercel.app/)
+---
+
 ## 📎 Link GDrive
 
 🔗 [Laporan Back End](https://drive.google.com/drive/folders/1RHci2y8BorgqR4ryJykzJW85flObGJpu?usp=sharing)
