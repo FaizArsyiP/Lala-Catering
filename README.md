@@ -65,7 +65,6 @@ Lala-Catering/
 │   ├── services/
 │   │   └── emailService.js          # Nodemailer email notifications
 │   ├── .dockerignore                # Docker ignore configuration
-│   ├── .env.example                 # Environment variables template
 │   ├── .gitignore                   # Git ignore configuration
 │   ├── fly.toml                     # Fly.io deployment configuration
 │   ├── index.js                     # Express server entry point
@@ -103,7 +102,6 @@ Lala-Catering/
 │   │   │   └── CartContext.js       # Shopping cart state management
 │   │   └── utils/
 │   │       └── axiosInstance.jsx    # Axios configuration with interceptors
-│   ├── .env.example                 # Frontend environment variables template
 │   ├── .gitignore
 │   ├── package.json                 # Frontend dependencies
 │   ├── tailwind.config.js           # Tailwind CSS configuration
