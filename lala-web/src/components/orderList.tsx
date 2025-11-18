@@ -498,7 +498,14 @@ export default function PesananList({ orders, loading, isAdmin = false }: Pesana
                                     )}
 
                                     <div className="flex items-center justify-end gap-3 mt-2">
-                                        <button className="px-3 py-1 border rounded text-sm cursor-pointer hover:bg-gray-50">
+                                        <button
+                                            onClick={() => {
+                                                const detailUrl = isAdmin
+                                                    ? `/admin/kelola-pesanan/${o._id}`
+                                                    : `/profile/orders/${o._id}`;
+                                                window.location.href = detailUrl;
+                                            }}
+                                            className="px-3 py-1 border rounded text-sm cursor-pointer hover:bg-gray-50">
                                             Lihat detail
                                         </button>
 
