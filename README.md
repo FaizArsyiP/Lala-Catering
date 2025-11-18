@@ -53,7 +53,6 @@ Lala-Catering/
 │   ├── models/
 │   │   ├── MenuItem.js              # Menu item schema
 │   │   ├── Order.js                 # Order schema with status tracking
-│   │   ├── Schedule.js              # Weekly schedule schema
 │   │   ├── StoreSettings.js         # Store open/close status (singleton)
 │   │   └── User.js                  # User schema with roles
 │   ├── routes/
@@ -156,4 +155,6 @@ Lala-Catering/
 🔗 [Laporan Back End](https://drive.google.com/drive/folders/1RHci2y8BorgqR4ryJykzJW85flObGJpu?usp=sharing)
 
 🔗 [Laporan Back End](https://drive.google.com/file/d/1mAsjHBpjChNknto8B63nMWqeGzhuBxyN/view?usp=drive_link)
+
+🔗 [Link Video](https://drive.google.com/file/d/1ArR3Ju-Lzob3Nt_n9NEEdZuTBoumCqiI/view?usp=drivesdk)
 
