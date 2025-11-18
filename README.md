@@ -154,3 +154,6 @@ Lala-Catering/
 ## 📎 Link GDrive
 
 🔗 [Laporan Back End](https://drive.google.com/drive/folders/1RHci2y8BorgqR4ryJykzJW85flObGJpu?usp=sharing)
+
+🔗 [Laporan Back End](https://drive.google.com/file/d/1mAsjHBpjChNknto8B63nMWqeGzhuBxyN/view?usp=drive_link)
+
