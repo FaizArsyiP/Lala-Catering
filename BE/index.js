@@ -18,6 +18,7 @@ const allowedOrigins = [
     "http://localhost:3000",
     "http://localhost:3001",
     process.env.FRONTEND_URL, // Nanti diisi URL frontend production
+    /\.fly\.dev$/,
 ].filter(Boolean); // Remove undefined values
 
 app.use(
