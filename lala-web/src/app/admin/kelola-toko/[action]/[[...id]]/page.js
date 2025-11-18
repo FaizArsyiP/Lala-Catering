@@ -5,37 +5,36 @@ import { useParams, useRouter } from 'next/navigation';
 import { IoArrowBackOutline } from "react-icons/io5";
 import MenuForm from '@/components/admin/menuForm';
 import Image from 'next/image';
+import api from '@/utils/axiosInstance';
 
-// --- MOCK DATABASE ---
-const MOCK_MENU_DATABASE = {
-    'M001': {
-        id: 'M001',
-        name: 'Nasi Goreng Seafood',
-        price: 20000,
-        stock: 15,
-        days: ['Senin', 'Rabu'],
-        status: 'Aktif',
-        description: 'Nasi goreng dengan bumbu khas dan seafood segar.',
-        imageName: 'nasi_goreng_seafood.jpg'
-    },
-    'M002': {
-        id: 'M002',
-        name: 'Soto Ayam Special',
-        price: 25000,
-        stock: 20,
-        days: ['Selasa', 'Kamis'],
-        status: 'Aktif',
-        description: 'Soto ayam dengan kuah bening dan bumbu rempah.',
-        imageName: 'soto_ayam.jpg'
-    }
+// Helper function: capitalize first letter
+const capitalize = (str) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
 
-const fetchMenuData = (id) => {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve(MOCK_MENU_DATABASE[id] || null);
-        }, 500);
-    });
+// Fetch menu data from API
+const fetchMenuData = async (id) => {
+    try {
+        const response = await api.get(`/menu/${id}`);
+        const item = response.data;
+
+        // Transform backend data to frontend format
+        return {
+            id: item._id,
+            name: item.nama,
+            price: item.harga,
+            stock: item.stok,
+            days: item.jadwal ? item.jadwal.map(capitalize) : [],
+            // Handle menu lama tanpa field isActive → default 'Aktif'
+            status: (item.isActive === false) ? 'Tidak Aktif' : 'Aktif',
+            description: item.deskripsi,
+            imageName: item.imageUrl ? item.imageUrl.split('/').pop() : ''
+        };
+    } catch (error) {
+        console.error('Error fetching menu:', error);
+        throw error;
+    }
 };
 
 // --- KOMPONEN PAGE UTAMA ---
@@ -48,15 +47,16 @@ const MenuActionPage = () => {
     const isCreateMode = action === 'new';
     const isDetailMode = action === 'detail';
     const isEditMode = action === 'edit';
-    
-    // menuId diambil dari params jika bukan create mode
-    const menuId = !isCreateMode ? params.menuId : null;
-    
+
+    // menuId diambil dari params.id (optional catch-all route)
+    // params.id adalah array, ambil element pertama
+    const menuId = params.id ? params.id[0] : null;
+
     // State untuk mode saat ini (bisa berubah dari detail ke edit)
     const [currentMode, setCurrentMode] = useState(
         isCreateMode ? 'create' : isDetailMode ? 'detail' : 'edit'
     );
-    
+
     const isReadOnly = currentMode === 'detail';
 
     // Initial form data
@@ -74,7 +74,7 @@ const MenuActionPage = () => {
     const [formData, setFormData] = useState(initialFormData);
     const [originalFormData, setOriginalFormData] = useState(initialFormData);
     const [isLoading, setIsLoading] = useState(!isCreateMode);
-    
+
     // --- Data Fetching (untuk Edit/Detail Mode) ---
     useEffect(() => {
         if (!isCreateMode && menuId) {
@@ -98,7 +98,7 @@ const MenuActionPage = () => {
             loadData();
         }
     }, [isCreateMode, menuId, router]);
-    
+
     // --- Form Handlers ---
     const handleChange = (e) => {
         if (isReadOnly) return;
@@ -121,17 +121,17 @@ const MenuActionPage = () => {
     const handleImageChange = (e) => {
         if (isReadOnly) return;
         const file = e.target.files[0];
-        setFormData(prev => ({ 
-            ...prev, 
-            image: file, 
-            imageName: file ? file.name : prev.imageName 
+        setFormData(prev => ({
+            ...prev,
+            image: file,
+            imageName: file ? file.name : prev.imageName
         }));
     };
-    
+
     // --- Action Handlers ---
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         // Validasi
-        if (!formData.name || !formData.price || !formData.stock) {
+        if (!formData.name || !formData.price || !formData.stock || !formData.description) {
             alert('Mohon lengkapi semua field yang wajib!');
             return;
         }
@@ -140,20 +140,81 @@ const MenuActionPage = () => {
             return;
         }
 
-        console.log(`${isCreateMode ? 'Create' : 'Update'} Menu:`, formData);
-        
-        // TODO: API call ke backend
-        alert(`${getPageTitle()} berhasil!`);
-        router.push('/admin/kelola-toko');
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Sesi Anda telah berakhir. Silakan login kembali.');
+                return;
+            }
+
+            // Prepare FormData for upload (supports image)
+            const submitData = new FormData();
+            submitData.append('nama', formData.name);
+            submitData.append('deskripsi', formData.description);
+            submitData.append('harga', formData.price);
+            submitData.append('stok', formData.stock);
+
+            // Convert days to lowercase for backend
+            const jadwalLowercase = formData.days.map(day => day.toLowerCase());
+            submitData.append('jadwal', JSON.stringify(jadwalLowercase));
+
+            // Convert status 'Aktif'/'Tidak Aktif' to boolean isActive
+            const isActive = formData.status === 'Aktif';
+            submitData.append('isActive', isActive.toString());
+
+            // Add image if exists
+            if (formData.image) {
+                submitData.append('gambar', formData.image);
+            }
+
+            let response;
+            if (isCreateMode) {
+                // Create new menu
+                response = await api.post('/menu', submitData, {
+                    headers: {
+                        'x-auth-token': token,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                alert('Menu berhasil ditambahkan!');
+            } else {
+                // Update existing menu
+                response = await api.put(`/menu/${menuId}`, submitData, {
+                    headers: {
+                        'x-auth-token': token,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                alert('Menu berhasil diupdate!');
+            }
+
+            router.push('/admin/kelola-toko');
+        } catch (err) {
+            console.error('Error saving menu:', err);
+            alert(err.response?.data?.message || 'Gagal menyimpan menu');
+        }
     };
 
-    const handleDelete = () => {
-        if (!window.confirm('Yakin ingin menghapus menu ini?')) return; 
-        
-        console.log('Delete menu:', menuId);
-        // TODO: API call delete
-        alert('Menu berhasil dihapus!');
-        router.push('/admin/kelola-toko');
+    const handleDelete = async () => {
+        if (!window.confirm('Yakin ingin menghapus menu ini?')) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Sesi Anda telah berakhir. Silakan login kembali.');
+                return;
+            }
+
+            await api.delete(`/menu/${menuId}`, {
+                headers: { 'x-auth-token': token }
+            });
+
+            alert('Menu berhasil dihapus!');
+            router.push('/admin/kelola-toko');
+        } catch (err) {
+            console.error('Error deleting menu:', err);
+            alert(err.response?.data?.message || 'Gagal menghapus menu');
+        }
     };
 
     const handleEdit = () => {
@@ -174,7 +235,7 @@ const MenuActionPage = () => {
     const handleBack = () => {
         router.push('/admin/kelola-toko');
     };
-    
+
     // --- Page Metadata ---
     const getPageTitle = () => {
         if (currentMode === 'create') return 'Tambah Menu Baru';
@@ -207,7 +268,7 @@ const MenuActionPage = () => {
                 {/* Row 1 */}
                 <div className="flex items-center gap-4 cursor-pointer border-b-2 border-transparent hover:border-[#E5713A] transition-all"
                     onClick={handleBack}>
-                    <Image src="/assets/icons/arrow-back.svg" alt="Kembali" className="w-10 h-10" />
+                    <Image src="/assets/icons/arrow-back.svg" alt="Kembali" width={40} height={40} />
                     <h2 className="text-[#E5713A] text-[40px] font-semibold">Kelola Toko</h2>
                 </div>
 
@@ -227,7 +288,7 @@ const MenuActionPage = () => {
                     onClick={handleEdit}
                     className="px-6 py-3 bg-[#E5713A] text-white font-semibold rounded-xl hover:bg-[#d65535] transition-all flex items-center gap-2"
                     >
-                    <Image src="/assets/icons/edit-button.svg" alt="Edit" className="w-5 h-5" />
+                    <Image src="/assets/icons/edit-button.svg" alt="Edit" width={20} height={20} />
                     Edit Menu
                     </button>
 
@@ -235,7 +296,7 @@ const MenuActionPage = () => {
                     onClick={handleDelete}
                     className="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all flex items-center gap-2"
                     >
-                    <Image src="/assets/icons/delete-button.svg" alt="Hapus" className="w-5 h-5" />
+                    <Image src="/assets/icons/delete-button.svg" alt="Hapus" width={20} height={20} />
                     Hapus Menu
                     </button>
                 </div>
@@ -257,14 +318,14 @@ const MenuActionPage = () => {
                     <button
                     onClick={handleCancel}
                     className="px-6 py-3 border-2 border-[#002683] text-[rgb(0,38,131)] font-bold rounded-xl hover:bg-[#F7F7F7] transition-all flex items-center gap-2">
-                    <Image src="/assets/icons/cancel-button.svg" alt="Batal" className="w-5 h-5" />
+                    <Image src="/assets/icons/cancel-button.svg" alt="Batal" width={20} height={20} />
                     Batal
                     </button>
 
                     <button
                     onClick={handleSubmit}
                     className="px-6 py-3 bg-[#E5713A] text-white font-semibold rounded-xl hover:bg-[#d65535] transition-all flex items-center gap-2">
-                    <Image src="/assets/icons/save-button.svg" alt="Simpan" className="w-5 h-5" />
+                    <Image src="/assets/icons/save-button.svg" alt="Simpan" width={20} height={20} />
                     {getSubmitButtonText()}
                     </button>
                 </div>

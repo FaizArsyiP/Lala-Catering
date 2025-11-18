@@ -173,13 +173,18 @@ const setWeeklySchedule = async (req, res) => {
 
 /**
  * GET /api/jadwal/mingguan
- * Get weekly schedule untuk minggu ini (semua menu dengan quota)
+ * Get weekly schedule untuk minggu ini (hanya menu aktif)
  */
 const getWeeklySchedule = async (req, res) => {
     try {
-        const menus = await MenuItem.find(); 
-        // kalau kamu mau filter pakai currentWeekSchedule, tambahkan kembali filternya
-        
+        // Fetch hanya menu dengan isActive = true (atau field tidak ada untuk backward compatibility)
+        const menus = await MenuItem.find({
+            $or: [
+                { isActive: true },              // Menu aktif
+                { isActive: { $exists: false } } // Menu lama tanpa field isActive (default aktif)
+            ]
+        });
+
         const hariList = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
 
         const schedule = hariList.map(hari => {

@@ -1,53 +1,88 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import DataTable from '@/components/admin/dataTable';
 import Search from '@/components/search';
 import DropdownFilter from '@/components/dropdownFilter';
 import MenuActionButtons from '@/components/admin/menuActionButtons';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import { useRouter } from 'next/navigation';
-
-// --- MOCK DATA ---
-const generateMockData = () => {
-    const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const menuNames = [
-        'Nasi Goreng Seafood', 'Es Teh Manis', 'Soto Ayam', 'Nasi Kebuli',
-        'Ayam Bakar', 'Sate Kambing', 'Bakso', 'Mie Ayam', 'Gado-Gado',
-        'Pecel Lele', 'Rendang', 'Nasi Uduk', 'Bubur Ayam', 'Nasi Kuning'
-    ];
-    
-    const data = [];
-    for (let i = 1; i <= 65; i++) {
-        data.push({
-            id: `M${String(i).padStart(3, '0')}`,
-            day: days[i % days.length],
-            name: menuNames[i % menuNames.length] + ` ${Math.floor(i/14) + 1}`,
-            image: `/assets/dummy/pic${(i % 4) + 1}.jpg`,
-            stock: Math.floor(Math.random() * 50) + 5,
-            price: Math.floor(Math.random() * 30000) + 10000,
-            status: i % 3 === 0 ? 'Tidak Aktif' : 'Aktif'
-        });
-    }
-    return data;
-};
-
-const MOCK_MENU_DATA = generateMockData();
+import api from '@/utils/axiosInstance';
 
 const ITEM_PER_PAGE_OPTIONS = [10, 20, 50];
 const DAY_OPTIONS = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 const STATUS_OPTIONS = ['Aktif', 'Tidak Aktif'];
 
+// Helper function: capitalize first letter
+const capitalize = (str) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
+// Helper function: Transform backend data to frontend format
+const transformMenuData = (menuItems) => {
+    return menuItems
+        .filter(item => item.jadwal && Array.isArray(item.jadwal) && item.jadwal.length > 0) // ← FILTER: Skip menu tanpa jadwal
+        .map(item => ({
+            id: item._id,
+            name: item.nama,
+            description: item.deskripsi,
+            price: item.harga,
+            stock: item.stok,
+            image: item.imageUrl || '/assets/dummy/pic1.jpg', // fallback image
+            days: item.jadwal.map(capitalize), // ['senin'] → ['Senin']
+            day: item.jadwal.map(capitalize).join(', '), // For display: 'Senin, Selasa'
+            // Handle menu lama tanpa field isActive → default true (Aktif)
+            status: (item.isActive === false) ? 'Tidak Aktif' : 'Aktif',
+            isActive: item.isActive !== undefined ? item.isActive : true // Default true untuk menu lama
+        }));
+};
+
 // --- KOMPONEN KELOLA TOKO ---
 const KelolaTokoPage = () => {
+    const [menuData, setMenuData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedDay, setSelectedDay] = useState(null);
     const [selectedStatus, setSelectedStatus] = useState(null);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     // --- HANDLER AKSI TABEL ---
     const router = useRouter();
+
+    // --- FETCH MENU DATA ---
+    useEffect(() => {
+        const fetchMenuData = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+                const response = await api.get('/menu');
+
+                // Check for menu without jadwal
+                const menuWithoutJadwal = response.data.filter(
+                    item => !item.jadwal || !Array.isArray(item.jadwal) || item.jadwal.length === 0
+                );
+
+                if (menuWithoutJadwal.length > 0) {
+                    console.warn(`⚠️ ${menuWithoutJadwal.length} menu tanpa jadwal (tidak ditampilkan):`,
+                        menuWithoutJadwal.map(m => m.nama));
+                }
+
+                const transformedData = transformMenuData(response.data);
+                setMenuData(transformedData);
+            } catch (err) {
+                console.error('Error fetching menu data:', err);
+                setError(err.response?.data?.message || 'Gagal memuat data menu');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchMenuData();
+    }, []);
 
     const handleDetailClick = (id) => {
         router.push(`/admin/kelola-toko/detail/${id}`);
@@ -63,24 +98,28 @@ const KelolaTokoPage = () => {
 
     // --- FILTER & SEARCH LOGIC ---
     const filteredData = useMemo(() => {
-        let data = MOCK_MENU_DATA;
+        let data = menuData;
 
+        // Filter by day - check if selectedDay is in the days array
         if (selectedDay) {
-            data = data.filter(item => item.day === selectedDay);
+            data = data.filter(item => item.days.includes(selectedDay));
         }
 
+        // Filter by search term
         if (searchTerm) {
             data = data.filter(item =>
-                item.name.toLowerCase().includes(searchTerm.toLowerCase())
+                item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.description?.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
 
+        // Filter by status
         if (selectedStatus) {
             data = data.filter(item => item.status === selectedStatus);
         }
 
         return data;
-    }, [searchTerm, selectedDay, selectedStatus]);
+    }, [menuData, searchTerm, selectedDay, selectedStatus]);
 
     // --- PAGINATION LOGIC ---
     const totalItems = filteredData.length;
@@ -223,6 +262,40 @@ const KelolaTokoPage = () => {
         );
     };
 
+
+    // --- LOADING & ERROR STATE ---
+    if (isLoading) {
+        return (
+            <div className='w-full mx-auto max-w-[1140px]'>
+                <div className="flex justify-center items-center min-h-[400px]">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#E5713A] mx-auto mb-4"></div>
+                        <p className="text-xl text-[#5B5B5B] font-medium">Memuat data menu...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className='w-full mx-auto max-w-[1140px]'>
+                <div className="flex justify-center items-center min-h-[400px]">
+                    <div className="text-center">
+                        <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                        <p className="text-xl text-red-600 font-medium mb-2">Error memuat data</p>
+                        <p className="text-[#5B5B5B]">{error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-4 px-6 py-2 bg-[#E5713A] text-white rounded-lg hover:bg-[#d65535]"
+                        >
+                            Coba Lagi
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className='w-full mx-auto max-w-[1140px]'>

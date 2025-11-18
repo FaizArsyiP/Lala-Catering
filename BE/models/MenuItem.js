@@ -62,6 +62,10 @@ const menuItemSchema = new mongoose.Schema({
         enum: ["senin", "selasa", "rabu", "kamis", "jumat", "sabtu", "minggu"],
         default: [],
     },
+    isActive: {
+        type: Boolean,
+        default: true, // Default: menu aktif (tampil di halaman pemesanan)
+    },
     // Current week schedule only
     currentWeekSchedule: weeklyScheduleSchema,
 });
