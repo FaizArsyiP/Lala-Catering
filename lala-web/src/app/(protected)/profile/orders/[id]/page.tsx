@@ -8,6 +8,46 @@ import UserDetailsForm from "@/components/userDetailsForm";
 import OrderSumBox from "@/components/orderSumBox";
 import api from "@/utils/axiosInstance";
 
+/* ==========================
+   TIPE DATA
+========================== */
+interface OrderItem {
+    menuItemId: string;
+    namaItem: string;
+    harga: number;
+    jumlah: number;
+}
+
+interface Delivery {
+    hari: string;
+    items: OrderItem[];
+}
+
+interface OrderResponse {
+    userInfo: {
+        nama: string;
+        nomorTelepon: string;
+        email: string;
+    };
+    metodePengambilan: string;
+    alamatPengirimanText?: string;
+    lokasiPengiriman?: string;
+    deliveries: Delivery[];
+    totalHarga: number;
+    status: string;
+}
+
+interface CartItem {
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    day: string;
+}
+
+/* ==========================
+   PAGE COMPONENT
+========================== */
 const OrderDetailPage = () => {
     const router = useRouter();
     const params = useParams();
@@ -21,7 +61,7 @@ const OrderDetailPage = () => {
         address: "",
     });
 
-    const [cart, setCart] = useState<any[]>([]);
+    const [cart, setCart] = useState<CartItem[]>([]);
     const [totalAmount, setTotalAmount] = useState(0);
     const [totalItems, setTotalItems] = useState(0);
     const [orderStatus, setOrderStatus] = useState("");
@@ -29,6 +69,9 @@ const OrderDetailPage = () => {
     const [error, setError] = useState<string | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
 
+    /* ==========================
+       DOWNLOAD INVOICE
+    ========================== */
     const handleDownloadInvoice = async () => {
         try {
             setIsDownloading(true);
@@ -39,27 +82,30 @@ const OrderDetailPage = () => {
                 return;
             }
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/${orderId}/invoice`, {
-                method: 'GET',
-                headers: {
-                    "x-auth-token": token
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/orders/${orderId}/invoice`,
+                {
+                    method: "GET",
+                    headers: { "x-auth-token": token },
                 }
-            });
+            );
 
             if (!response.ok) {
-                throw new Error('Gagal mengunduh invoice');
+                throw new Error("Gagal mengunduh invoice");
             }
 
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = document.createElement("a");
+
             a.href = url;
             a.download = `Invoice-${orderId}.pdf`;
             document.body.appendChild(a);
             a.click();
+
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-        } catch (err: any) {
+        } catch (err) {
             console.error("Error downloading invoice:", err);
             alert("Gagal mengunduh invoice. Silakan coba lagi.");
         } finally {
@@ -67,6 +113,9 @@ const OrderDetailPage = () => {
         }
     };
 
+    /* ==========================
+       FETCH ORDER DETAILS
+    ========================== */
     useEffect(() => {
         const fetchOrderDetail = async () => {
             try {
@@ -78,8 +127,8 @@ const OrderDetailPage = () => {
                     return;
                 }
 
-                const response = await api.get(`/orders/${orderId}`, {
-                    headers: { "x-auth-token": token }
+                const response = await api.get<OrderResponse>(`/orders/${orderId}`, {
+                    headers: { "x-auth-token": token },
                 });
 
                 const order = response.data;
@@ -90,13 +139,13 @@ const OrderDetailPage = () => {
                     phone: order.userInfo.nomorTelepon,
                     email: order.userInfo.email,
                     deliveryMethod: order.metodePengambilan,
-                    address: order.alamatPengirimanText || order.lokasiPengiriman || '',
+                    address: order.alamatPengirimanText || order.lokasiPengiriman || "",
                 });
 
-                // Transform deliveries to cart format
-                const cartItems: any[] = [];
-                order.deliveries.forEach((delivery: any) => {
-                    delivery.items.forEach((item: any) => {
+                // Convert deliveries → cart format
+                const cartItems: CartItem[] = [];
+                order.deliveries.forEach((delivery) => {
+                    delivery.items.forEach((item) => {
                         cartItems.push({
                             id: item.menuItemId,
                             name: item.namaItem,
@@ -109,21 +158,25 @@ const OrderDetailPage = () => {
 
                 setCart(cartItems);
                 setTotalAmount(order.totalHarga);
-                setTotalItems(cartItems.reduce((sum: number, item: any) => sum + item.quantity, 0));
+                setTotalItems(cartItems.reduce((sum, item) => sum + item.quantity, 0));
                 setOrderStatus(order.status);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Error fetching order:", err);
-                setError(err.response?.data?.message || "Gagal memuat detail pesanan");
+                const message =
+                    (err as any)?.response?.data?.message ||
+                    "Gagal memuat detail pesanan";
+                setError(message);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        if (orderId) {
-            fetchOrderDetail();
-        }
+        if (orderId) fetchOrderDetail();
     }, [orderId, router]);
 
+    /* ==========================
+       UI RENDER
+    ========================== */
     if (isLoading) {
         return (
             <div className="min-h-screen bg-white">
@@ -148,7 +201,8 @@ const OrderDetailPage = () => {
                         <p className="text-xl text-red-600 font-medium mb-2">{error}</p>
                         <button
                             onClick={() => router.push("/profile")}
-                            className="mt-4 px-6 py-2 bg-[#E5713A] text-white rounded-lg hover:bg-[#d65535]">
+                            className="mt-4 px-6 py-2 bg-[#E5713A] text-white rounded-lg hover:bg-[#d65535]"
+                        >
                             Kembali ke Profil
                         </button>
                     </div>
@@ -164,7 +218,8 @@ const OrderDetailPage = () => {
             <div className="max-w-[1140px] mx-auto px-8 py-12">
                 <button
                     onClick={() => router.push("/profile")}
-                    className="inline-flex items-center text-[#E5713A] hover:text-[#D46029] font-semibold transition-colors mb-8">
+                    className="inline-flex items-center text-[#E5713A] hover:text-[#D46029] font-semibold transition-colors mb-8"
+                >
                     <IoArrowBackOutline size={24} className="mr-2" />
                     Kembali ke Profil
                 </button>
@@ -174,37 +229,49 @@ const OrderDetailPage = () => {
                         <h1 className="text-[40px] font-bold text-[#002683]">
                             Detail Pesanan
                         </h1>
+
                         <div className="flex flex-col items-end gap-3">
                             <div className="text-right">
                                 <div className="text-sm text-[#5B5B5B]">Status</div>
-                                <div className={`text-xl font-bold uppercase ${
-                                    orderStatus.toLowerCase() === 'completed' ? 'text-green-600' :
-                                    orderStatus.toLowerCase() === 'cancelled' ? 'text-red-600' :
-                                    orderStatus.toLowerCase() === 'pending' ? 'text-yellow-600' :
-                                    'text-[#E5713A]'
-                                }`}>
+                                <div
+                                    className={`text-xl font-bold uppercase ${
+                                        orderStatus.toLowerCase() === "completed"
+                                            ? "text-green-600"
+                                            : orderStatus.toLowerCase() === "cancelled"
+                                            ? "text-red-600"
+                                            : orderStatus.toLowerCase() === "pending"
+                                            ? "text-yellow-600"
+                                            : "text-[#E5713A]"
+                                    }`}
+                                >
                                     {orderStatus}
                                 </div>
                             </div>
+
                             <button
                                 onClick={handleDownloadInvoice}
                                 disabled={isDownloading}
-                                className="px-6 py-2 bg-[#002683] text-white rounded-lg hover:bg-[#001a5c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                className="px-6 py-2 bg-[#002683] text-white rounded-lg hover:bg-[#001a5c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                    />
                                 </svg>
-                                {isDownloading ? 'Mengunduh...' : 'Download Invoice'}
+                                {isDownloading ? "Mengunduh..." : "Download Invoice"}
                             </button>
                         </div>
                     </div>
 
                     <div className="flex gap-8">
-                        {/* KIRI - Form Data Diri (60%) - READ ONLY */}
+                        {/* LEFT - USER INFO */}
                         <div className="w-[60%]">
                             <h2 className="text-[30px] font-bold text-[#E5713A] mb-6">
                                 Data Pemesan
                             </h2>
-
                             <UserDetailsForm
                                 userData={userData}
                                 setUserData={setUserData}
@@ -212,13 +279,15 @@ const OrderDetailPage = () => {
                             />
                         </div>
 
-                        {/* KANAN - Ringkasan Pesanan (40%) - TANPA TOMBOL */}
+                        {/* RIGHT - SUMMARY */}
                         <div className="w-[40%]">
                             <OrderSumBox
                                 cart={cart}
                                 totalAmount={totalAmount}
                                 totalItems={totalItems}
                                 showCheckoutButton={false}
+                                checkoutAction={()=> {}}
+                                
                             />
                         </div>
                     </div>
