@@ -146,7 +146,7 @@ Lala-Catering/
 | --------------- | ---------------------- | ----------------------------------------------------------------------- |
 | Version Control | Git & GitHub           | Source code management                                                  |
 | Backend Deploy  | Fly.io                 | Cloud platform untuk deployment backend                                 |
-| Frontend Deploy | Vercel (recommended)   | Platform deployment untuk Next.js                                       |
+| Frontend Deploy | Vercel                 | Platform deployment untuk Next.js                                       |
 | API Testing     | Postman/Thunder Client | REST API testing tools                                                  |
 
 ---
