@@ -25,6 +25,7 @@ const KonfirmasiPesananPage = () => {
     });
 
     const [isProcessing, setIsProcessing] = useState(false);
+    const [profileIncomplete, setProfileIncomplete] = useState(false);
 
     const profile = useProfile();
 
@@ -37,21 +38,45 @@ const KonfirmasiPesananPage = () => {
                 email: profile.email ?? "",
                 address: profile.alamatPengiriman ?? "",
             }));
+
+            // Cek apakah profile masih incomplete
+            const incomplete =
+                profile.nomorTelepon === "000000000" ||
+                profile.alamatPengiriman === "MUST_UPDATE_PROFILE" ||
+                !profile.alamatPengiriman ||
+                !profile.nomorTelepon;
+            setProfileIncomplete(incomplete);
+
+            // Redirect ke profile jika data belum lengkap
+            if (incomplete) {
+                alert("Silakan lengkapi nomor telepon dan alamat pengiriman terlebih dahulu!");
+                router.push("/profile?complete=true");
+            }
         }
-    }, [profile]);
+    }, [profile, router]);
 
     const handleCheckout = async () => {
         if (cart.length === 0) {
             alert("Keranjang Anda kosong!");
             return;
         }
+
+        // Double check profile completion
+        if (profileIncomplete) {
+            alert("Silakan lengkapi profile Anda terlebih dahulu!");
+            router.push("/profile?complete=true");
+            return;
+        }
+
         if (
             !userData.name ||
             !userData.phone ||
             !userData.email ||
-            !userData.address
+            !userData.address ||
+            userData.phone === "000000000" ||
+            userData.address === "MUST_UPDATE_PROFILE"
         ) {
-            alert("Mohon lengkapi semua data!");
+            alert("Mohon lengkapi semua data dengan benar!");
             return;
         }
 

@@ -9,6 +9,7 @@ export const ProfileSection = () => {
                 relative w-full bg-white
                 min-h-screen
                 flex flex-col items-center justify-start
+                px-4 tablet:px-8
                 z-[30]
             "
         >
@@ -16,9 +17,9 @@ export const ProfileSection = () => {
             <h2
                 className="
                     text-[#FF8C42]
-                    text-3xl sm:text-4xl md:text-5xl lg:text-6xl
+                    text-2xl tablet:text-3xl sm:text-4xl md:text-5xl lg:text-6xl
                     font-stanger text-center
-                    mb-10
+                    mb-8 tablet:mb-10
                 "
             >
                 Mengapa Memilih Kami?
@@ -30,7 +31,7 @@ export const ProfileSection = () => {
                     w-full max-w-[1140px]
                     flex flex-col md:flex-row
                     items-center justify-center
-                    gap-10 md:gap-8
+                    gap-8 md:gap-8
                     flex-grow
                 "
             >
@@ -53,9 +54,9 @@ export const ProfileSection = () => {
                 ].map((c, index) => (
                     <div
                         key={index}
-                        className="flex-1 flex flex-col items-center text-center max-w-[300px]"
+                        className="flex-1 flex flex-col items-center text-center max-w-[300px] w-full"
                     >
-                        <div className="relative w-[110px] h-[110px] mb-3">
+                        <div className="relative w-[90px] h-[90px] tablet:w-[110px] tablet:h-[110px] mb-3">
                             <Image
                                 src={c.img}
                                 alt={`Icon ${index}`}
@@ -67,7 +68,7 @@ export const ProfileSection = () => {
                         <h3
                             className="
                                 text-[#FF8C42]
-                                text-xl sm:text-2xl
+                                text-lg tablet:text-xl sm:text-2xl
                                 font-century-gothic-bold
                                 whitespace-pre-line
                                 mb-1
@@ -79,7 +80,7 @@ export const ProfileSection = () => {
                         <p
                             className="
                                 text-gray-800
-                                text-base sm:text-lg
+                                text-sm tablet:text-base sm:text-lg
                                 whitespace-pre-line
                                 font-century-gothic-regular
                                 leading-relaxed
@@ -95,9 +96,10 @@ export const ProfileSection = () => {
             <h2
                 className="
                     text-[#FF8C42]
-                    text-3xl sm:text-4xl md:text-5xl lg:text-6xl
+                    text-2xl tablet:text-3xl sm:text-4xl md:text-5xl lg:text-6xl
                     font-stanger text-center
-                    mt-14 mb-4
+                    mt-10 tablet:mt-14 mb-4
+                    px-4
                 "
             >
                 Bahan Segar,<br />Kualitas Terjamin
@@ -107,11 +109,12 @@ export const ProfileSection = () => {
             <p
                 className="
                     text-gray-800
-                    text-base sm:text-lg
+                    text-sm tablet:text-base sm:text-lg
                     text-center
                     max-w-[700px]
                     font-century-gothic-regular
                     leading-relaxed
+                    px-4
                 "
             >
                 Kami memilih bahan yang terbaik,<br />

@@ -13,7 +13,7 @@ export const HeroSection = () => {
                 flex flex-col lg:flex-row
                 items-center
                 justify-start lg:justify-between
-                px-[15vw] pt-4 pb-16
+                px-4 tablet:px-[10vw] md:px-[15vw] pt-4 pb-16
             "
         >
             {/* CURVED BOTTOM OVERLAY */}
@@ -42,7 +42,7 @@ export const HeroSection = () => {
                 className="
                     relative z-[40]
                     w-full lg:w-[55%]
-                    h-[42vh] sm:h-[48vh] md:h-[52vh] lg:h-[60vh] xl:h-[70vh]
+                    h-[35vh] tablet:h-[42vh] sm:h-[48vh] md:h-[52vh] lg:h-[60vh] xl:h-[70vh]
                 "
             >
                 <Image
@@ -51,8 +51,8 @@ export const HeroSection = () => {
                     fill
                     className="
                         object-contain
-                        object-left
-                        rounded-t-[80px]
+                        object-center lg:object-left
+                        rounded-t-[40px] tablet:rounded-t-[60px] md:rounded-t-[80px]
                     "
                     priority
                 />

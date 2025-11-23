@@ -149,10 +149,10 @@ const Page = () => {
                 </div>
             )}
 
-            <div className="max-w-[1140px] mx-auto">
-                <div className="top-10 z-10 py-2  mb-5 ease-in-out w-full bg-transparent ">
-                    <div className="w-fit flex items-start gap-[10px]">
-                        <div className="flex-1">
+            <div className="max-w-[1140px] mx-auto px-4 tablet:px-6">
+                <div className="top-10 z-10 py-2 mb-5 ease-in-out w-full bg-transparent">
+                    <div className="w-full flex flex-col tablet:flex-row items-stretch tablet:items-start gap-3 tablet:gap-[10px]">
+                        <div className="flex-1 w-full tablet:w-auto">
                             <Search
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -160,7 +160,7 @@ const Page = () => {
                             />
                         </div>
 
-                        <div className="flex-shrink-0 w-fit">
+                        <div className="flex-shrink-0 w-full tablet:w-fit">
                             <DropdownFilter
                                 name="Pilih Hari"
                                 options={hariList.map(
@@ -187,13 +187,13 @@ const Page = () => {
                     {menuByDay.map((group) => (
                         <div key={group.day} className="mb-6">
                             <div className="flex items-center mb-6">
-                                <h2 className="text-[40px] font-semibold text-[#002683] flex-shrink-0 w-[150px] capitalize">
+                                <h2 className="text-2xl tablet:text-3xl md:text-[40px] font-semibold text-[#002683] flex-shrink-0 w-[100px] tablet:w-[150px] capitalize">
                                     {group.day}
                                 </h2>
                                 <hr className="border-dashed border-t-2 border-[#E5713A] w-full ml-4" />
                             </div>
 
-                            <div className="grid grid-cols-4 gap-[33.3px]">
+                            <div className="grid grid-cols-1 tablet:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 tablet:gap-6 md:gap-[33.3px]">
                                 {group.menus.map((menu) => (
                                     <CardMenu
                                         key={menu.id + group.day}

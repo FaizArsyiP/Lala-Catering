@@ -61,6 +61,8 @@ const loginUser = async (req, res) => {
                 nama: user.nama,
                 email: user.email,
                 role: user.role,
+                nomorTelepon: user.nomorTelepon,
+                alamatPengiriman: user.alamatPengiriman,
             },
         });
     } catch (err) {
@@ -131,6 +133,8 @@ const googleLogin = async (req, res) => {
                 nama: user.nama,
                 email: user.email,
                 role: user.role,
+                nomorTelepon: user.nomorTelepon,
+                alamatPengiriman: user.alamatPengiriman,
             },
         });
     } catch (err) {
