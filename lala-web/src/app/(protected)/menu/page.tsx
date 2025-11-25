@@ -31,6 +31,25 @@ interface MenuItem {
     day: string;
 }
 
+/**
+ * Helper: Check if a day has passed (simple check)
+ * Returns true if day is today or later in the week
+ */
+const isDayAvailable = (dayName: string): boolean => {
+    const daysOfWeek = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const today = new Date();
+    const currentDayIndex = today.getDay();
+    const targetDayIndex = daysOfWeek.indexOf(dayName);
+
+    if (targetDayIndex === -1) {
+        return false;
+    }
+
+    // Available if target day >= current day (same week)
+    // Senin=1, Selasa=2, ..., Sabtu=6
+    return targetDayIndex >= currentDayIndex;
+};
+
 const Page = () => {
     const [menuList, setMenuList] = useState<MenuItem[]>([]);
     const [selectedHari, setSelectedHari] = useState<string | null>(null);
@@ -163,58 +182,85 @@ const Page = () => {
                         <div className="flex-shrink-0 w-full tablet:w-fit">
                             <DropdownFilter
                                 name="Pilih Hari"
-                                options={hariList.map(
-                                    (h) =>
-                                        h.charAt(0).toUpperCase() + h.slice(1)
-                                )}
+                                options={hariList.map((h) => {
+                                    const isAvailable = isDayAvailable(h);
+                                    const displayName = h.charAt(0).toUpperCase() + h.slice(1);
+                                    // Add indicator for unavailable days in dropdown
+                                    return isAvailable
+                                        ? displayName
+                                        : `${displayName} 🔒`;
+                                })}
                                 value={
                                     selectedHari
                                         ? selectedHari.charAt(0).toUpperCase() +
                                         selectedHari.slice(1)
                                         : null
                                 }
-                                onSelect={(v: string) =>
-                                    setSelectedHari(
-                                        v ? v.toLowerCase() : null
-                                    )
-                                }
+                                onSelect={(v: string) => {
+                                    // Remove lock emoji if present
+                                    const cleanValue = v ? v.replace(' 🔒', '') : null;
+                                    const isAvailable = isDayAvailable(cleanValue || '');
+
+                                    // Only allow selection of available days
+                                    if (isAvailable) {
+                                        setSelectedHari(cleanValue ? cleanValue.toLowerCase() : null);
+                                    }
+                                }}
                             />
                         </div>
                     </div>
                 </div>
 
                 <div className="w-full flex flex-col gap-[30px]">
-                    {menuByDay.map((group) => (
-                        <div key={group.day} className="mb-6">
-                            <div className="flex items-center mb-6">
-                                <h2 className="text-2xl tablet:text-3xl md:text-[40px] font-semibold text-[#002683] flex-shrink-0 w-[100px] tablet:w-[150px] capitalize">
-                                    {group.day}
-                                </h2>
-                                <hr className="border-dashed border-t-2 border-[#E5713A] w-full ml-4" />
-                            </div>
+                    {menuByDay.map((group) => {
+                        // Check if this day is available for ordering (simple check)
+                        const isAvailable = isDayAvailable(group.day.charAt(0).toUpperCase() + group.day.slice(1));
 
-                            <div className="grid grid-cols-1 tablet:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 tablet:gap-6 md:gap-[33.3px]">
-                                {group.menus.map((menu) => (
-                                    <CardMenu
-                                        key={menu.id + group.day}
-                                        id={menu.id}
-                                        imageSrc={menu.imageSrc}
-                                        name={menu.name}
-                                        description={menu.description}
-                                        price={menu.price}
-                                        day={group.day}
-                                        isStoreOpen={isStoreOpen}
-                                    />
-                                ))}
-                            </div>
+                        return (
+                            <div key={group.day} className="mb-6">
+                                <div className="flex items-center mb-6">
+                                    <h2 className={`text-2xl tablet:text-3xl md:text-[40px] font-semibold flex-shrink-0 w-[100px] tablet:w-[150px] capitalize ${
+                                        isAvailable ? "text-[#002683]" : "text-gray-400"
+                                    }`}>
+                                        {group.day}
+                                    </h2>
+                                    <hr className={`border-dashed border-t-2 w-full ml-4 ${
+                                        isAvailable ? "border-[#E5713A]" : "border-gray-300"
+                                    }`} />
 
-                            {group.menus.length === 0 && (
-                                <p className="text-gray-500 italic mt-4">
-                                    Tidak ada menu untuk hari {group.day}.
-                                </p>
-                            )}
-                        </div>
-                    ))}
+                                    {/* Badge for unavailable days only */}
+                                    {!isAvailable && (
+                                        <span className="ml-4 px-4 py-2 bg-gray-200 text-gray-600 text-sm font-semibold rounded-full whitespace-nowrap">
+                                            🔒 Tidak Tersedia
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className={`grid grid-cols-1 tablet:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 tablet:gap-6 md:gap-[33.3px] ${
+                                    !isAvailable ? "opacity-50 pointer-events-none" : ""
+                                }`}>
+                                    {group.menus.map((menu) => (
+                                        <CardMenu
+                                            key={menu.id + group.day}
+                                            id={menu.id}
+                                            imageSrc={menu.imageSrc}
+                                            name={menu.name}
+                                            description={menu.description}
+                                            price={menu.price}
+                                            day={group.day}
+                                            isStoreOpen={isStoreOpen && isAvailable}
+                                        />
+                                    ))}
+                                </div>
+
+                                {group.menus.length === 0 && (
+                                    <p className="text-gray-500 italic mt-4">
+                                        Tidak ada menu untuk hari {group.day}.
+                                    </p>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>
