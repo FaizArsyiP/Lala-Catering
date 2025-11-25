@@ -183,14 +183,14 @@ export default function LoginPage() {
 
                         {/* Google Login */}
                         {loginMethod === "google" && (
-                            <div className="self-center">
+                        <div className="w-full max-w-md">
                                 <GoogleLogin
                                     onSuccess={handleGoogleSuccess}
                                     onError={handleGoogleFailure}
-                                    width="100%"
+                                    width="448"
                                     size="large"
                                     theme="outline"
-                                    text="signin"
+                                    text="continue_with"
                                 />
                             </div>
                         )}
